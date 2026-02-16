@@ -4,10 +4,21 @@ import { useState } from "react";
 export default function Home() {
   const [resumeText, setResumeText] = useState("");
 
-  const handleGenerate = () => {
-    console.log("Resume submitted:", resumeText);
-    alert("Resume received! (Check console)");
-  };
+const handleGenerate = async () => {
+  const response = await fetch("/api/generate", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ resumeText }),
+  });
+
+  const data = await response.json();
+  console.log("Backend response:", data);
+
+  alert("Portfolio data generated! Check console.");
+};
+
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-100 p-6">

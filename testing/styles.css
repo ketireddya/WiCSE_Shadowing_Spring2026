@@ -1,0 +1,24 @@
+body { font-family: Arial, sans-serif; margin: 0; padding: 0; line-height: 1.6; }
+header { background: #333; color: #fff; padding: 20px; text-align: center; }
+header a { color: #fff; text-decoration: none; }
+main { padding: 20px; }
+section { margin-bottom: 20px; }
+h2 { color: #333; }
+footer { background: #333; color: #fff; text-align: center; padding: 10px; position: relative; bottom: 0; width: 100%; }
+@media (max-width: 600px) { header, footer { padding: 15px; } main { padding: 15px; } }
+
+/* --- Added by API: ensure links remain visible in dark sections --- */
+header a, header a:visited {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+header a:hover { opacity: 0.9; }
+
+footer a, footer a:visited {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+footer a:hover { opacity: 0.9; }
+/* --- End API guard --- */

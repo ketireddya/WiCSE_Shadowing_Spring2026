@@ -6,14 +6,31 @@ type WebsiteFiles = {
   css: string;
 };
 
+function downloadTextFile(filename: string, content: string, mimeType: string) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+
+  // cleanup
+  URL.revokeObjectURL(url);
+}
+
 function CodeBlock({
   title,
   value,
   filename,
+  mimeType,
 }: {
   title: string;
   value: string;
   filename: string;
+  mimeType: string;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -27,6 +44,10 @@ function CodeBlock({
     }
   };
 
+  const download = () => {
+    downloadTextFile(filename, value, mimeType);
+  };
+
   return (
     <section className="bg-white rounded-xl shadow-lg p-6 mb-6">
       <div className="flex items-start justify-between gap-4 mb-3">
@@ -34,16 +55,25 @@ function CodeBlock({
           <h2 className="text-xl font-semibold text-black">{title}</h2>
           <p className="text-sm text-gray-600">
             Create a file named <span className="font-mono">{filename}</span> and paste
-            this in.
+            this in — or download it directly.
           </p>
         </div>
 
-        <button
-          onClick={copy}
-          className="shrink-0 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition text-black"
-        >
-          {copied ? "Copied!" : "Copy"}
-        </button>
+        <div className="shrink-0 flex items-center gap-2">
+          <button
+            onClick={copy}
+            className="border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition text-black"
+          >
+            {copied ? "Copied!" : "Copy"}
+          </button>
+
+          <button
+            onClick={download}
+            className="border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition text-black"
+          >
+            Download
+          </button>
+        </div>
       </div>
 
       <pre className="w-full overflow-auto rounded-lg border bg-gray-50 p-4 text-sm text-black">
@@ -97,7 +127,6 @@ export default function Home() {
         return;
       }
 
-      // Expecting { html, css }
       setFiles({
         html: String(data?.html ?? ""),
         css: String(data?.css ?? ""),
@@ -186,16 +215,9 @@ export default function Home() {
               <div>
                 <h1 className="text-3xl font-bold">Your website files are ready</h1>
                 <p className="text-gray-700 mt-2">
-                  In your IDE, create a folder (any name), then create two files:
+                  You can copy/paste the code or use the Download buttons to save the
+                  files directly.
                 </p>
-                <ul className="list-disc pl-6 mt-2 text-gray-800">
-                  <li>
-                    <span className="font-mono">index.html</span>
-                  </li>
-                  <li>
-                    <span className="font-mono">styles.css</span>
-                  </li>
-                </ul>
                 <p className="text-gray-700 mt-3">
                   Then open <span className="font-mono">index.html</span> in your browser.
                 </p>
@@ -210,8 +232,18 @@ export default function Home() {
             </div>
           </div>
 
-          <CodeBlock title="HTML" value={files.html} filename="index.html" />
-          <CodeBlock title="CSS" value={files.css} filename="styles.css" />
+          <CodeBlock
+            title="HTML"
+            value={files.html}
+            filename="index.html"
+            mimeType="text/html;charset=utf-8"
+          />
+          <CodeBlock
+            title="CSS"
+            value={files.css}
+            filename="styles.css"
+            mimeType="text/css;charset=utf-8"
+          />
         </div>
       )}
     </main>

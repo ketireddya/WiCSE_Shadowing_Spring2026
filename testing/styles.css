@@ -1,26 +1,73 @@
-body { font-family: Arial, sans-serif; margin: 0; padding: 0; line-height: 1.6; }
-header { background: #333; color: #fff; padding: 20px; text-align: center; }
-h1 { margin: 0; }
-main { padding: 20px; }
-section { margin-bottom: 20px; }
-h2 { color: #333; }
-h3 { color: #555; }
-footer { background: #333; color: #fff; text-align: center; padding: 10px 0; position: relative; bottom: 0; width: 100%; }
-a { color: #1e90ff; text-decoration: none; }
-a:hover { text-decoration: underline; }
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+
+header {
+  background: #333;
+  color: #fff;
+  padding: 20px;
+  text-align: center;
+}
+
+h1 {
+  margin: 0;
+}
+
+main {
+  padding: 20px;
+}
+
+section {
+  margin-bottom: 20px;
+}
+
+h2 {
+  color: #333;
+}
+
+footer {
+  background: #333;
+  color: #fff;
+  text-align: center;
+  padding: 10px;
+  position: relative;
+  bottom: 0;
+  width: 100%;
+}
+
+a {
+  color: #1e90ff;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
 
 /* --- Added by API: ensure links remain visible in dark sections --- */
-header a, header a:visited {
+header a,
+header a:visited {
   color: inherit;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-header a:hover { opacity: 0.9; }
 
-footer a, footer a:visited {
+header a:hover {
+  opacity: 0.9;
+}
+
+footer a,
+footer a:visited {
   color: inherit;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-footer a:hover { opacity: 0.9; }
+
+footer a:hover {
+  opacity: 0.9;
+}
+
 /* --- End API guard --- */

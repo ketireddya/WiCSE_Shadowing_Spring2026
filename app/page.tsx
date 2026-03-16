@@ -1,32 +1,27 @@
 "use client";
 import { useMemo, useState } from "react";
 
-// Defines the structure of the data we expect back from the API
 type WebsiteFiles = {
   html: string;
   css: string;
 };
 
-// Helper function to trigger a browser download for a given string of text
+type InputMode = "upload" | "paste" | null;
+
 function downloadTextFile(filename: string, content: string, mimeType: string) {
-  // Create a Blob object representing the data as a file
   const blob = new Blob([content], { type: mimeType });
-  // Create a temporary URL for the Blob
   const url = URL.createObjectURL(blob);
 
-  // Create an invisible <a> element, set its href to the Blob URL, and click it
   const a = document.createElement("a");
   a.href = url;
   a.download = filename;
   document.body.appendChild(a);
   a.click();
-  a.remove(); // Remove the element after clicking
+  a.remove();
 
-  // Clean up the URL to free memory
   URL.revokeObjectURL(url);
 }
 
-// A reusable UI component to display a block of code with "Copy" and "Download" buttons
 function CodeBlock({
   title,
   value,
@@ -38,22 +33,18 @@ function CodeBlock({
   filename: string;
   mimeType: string;
 }) {
-  // Tracks whether the text was just copied to show a "Copied!" message
   const [copied, setCopied] = useState(false);
 
-  // Writes the code block text to the user's clipboard
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(value);
       setCopied(true);
-      // Reset the "Copied!" text back to "Copy" after 1.2 seconds
       setTimeout(() => setCopied(false), 1200);
     } catch {
       alert("Copy failed. You can still manually select and copy the text.");
     }
   };
 
-  // Triggers the download of this specific code block
   const download = () => {
     downloadTextFile(filename, value, mimeType);
   };
@@ -65,7 +56,7 @@ function CodeBlock({
           <h2 className="text-xl font-semibold text-black">{title}</h2>
           <p className="text-sm text-gray-600">
             Create a file named <span className="font-mono">{filename}</span> and paste
-            this in — or download it directly.
+            this in - or download it directly.
           </p>
         </div>
 
@@ -93,24 +84,36 @@ function CodeBlock({
   );
 }
 
-// The main page component
-export default function Home() {
-  // --- State Variables ---
-  // Stores the manually pasted resume text
-  const [resumeText, setResumeText] = useState("");
-  // Stores the uploaded PDF file
-  const [resumeFile, setResumeFile] = useState<File | null>(null);
-  // Stores the final generated HTML and CSS
-  const [files, setFiles] = useState<WebsiteFiles | null>(null);
-  // Tracks whether an API request is currently in progress
-  const [loading, setLoading] = useState(false);
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen flex items-center justify-center px-6">
+      <div className="bg-white shadow-lg rounded-xl p-10 w-full max-w-xl text-center">
+        <div className="flex justify-center mb-6">
+          <div className="w-16 h-16 border-4 border-black rounded-md animate-pulse" />
+        </div>
 
-  // Prevents generation if both inputs are empty
+        <h2 className="text-2xl font-semibold text-black mb-2">
+          Generating your portfolio
+        </h2>
+        <p className="text-gray-600">
+          Taking in your resume, sending it to the AI, and preparing your website files.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export default function Home() {
+  const [resumeText, setResumeText] = useState("");
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<WebsiteFiles | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [inputMode, setInputMode] = useState<InputMode>(null);
+
   const canGenerate = useMemo(() => {
     return Boolean(resumeFile) || resumeText.trim().length > 0;
   }, [resumeFile, resumeText]);
 
-  // Handles the submission to the backend API
   const handleGenerate = async () => {
     try {
       if (!canGenerate) {
@@ -118,11 +121,10 @@ export default function Home() {
         return;
       }
 
-      setLoading(true); // Start loading spinner/text
+      setLoading(true);
 
       let response: Response;
 
-      // If a file was uploaded, send it as FormData
       if (resumeFile) {
         const formData = new FormData();
         formData.append("resume", resumeFile);
@@ -132,7 +134,6 @@ export default function Home() {
           body: formData,
         });
       } else {
-        // Otherwise, send the pasted text as a JSON block
         response = await fetch("/api/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -147,7 +148,6 @@ export default function Home() {
         return;
       }
 
-      // If successful, save the returned HTML and CSS directly into state
       setFiles({
         html: String(data?.html ?? ""),
         css: String(data?.css ?? ""),
@@ -156,86 +156,121 @@ export default function Home() {
       console.error(error);
       alert("Something went wrong.");
     } finally {
-      setLoading(false); // Stop loading spinner/text
+      setLoading(false);
     }
   };
 
   return (
     <main className="min-h-screen bg-gray-100 p-6">
-      {/* View 1: The Input Form (shown initially when there are no generated files) */}
-      {!files && (
+      {loading && !files && <LoadingScreen />}
+
+      {!loading && !files && (
         <div className="min-h-screen flex items-center justify-center">
           <div className="bg-white shadow-lg rounded-xl p-10 w-full max-w-3xl">
             <h1 className="text-4xl font-bold mb-4 text-center text-blue-900">
               AI One-Page Website Generator
             </h1>
 
-            <p className="text-gray-600 mb-6 text-center">
-              Upload a PDF or paste your resume text. You’ll get back two files:{" "}
-              <span className="font-mono">index.html</span> and{" "}
-              <span className="font-mono">styles.css</span>.
+            <p className="text-gray-600 mb-8 text-center max-w-2xl mx-auto">
+              Turn your resume into a simple personal website. Choose whether you want
+              to upload your resume as a PDF or paste the content directly, and the
+              program will generate your website files for you.
             </p>
 
-            {/* File Upload Section */}
-            <div className="mb-4">
-              <label className="block font-semibold text-blue-900 mb-2">
-                Upload PDF (optional)
-              </label>
+            <div className="flex justify-center mb-8">
+              <div className="inline-flex items-center gap-2 rounded-full bg-gray-100 p-2 border border-gray-200">
+                <button
+                  onClick={() => {
+                    setInputMode("upload");
+                    setResumeText("");
+                  }}
+                  className={`px-5 py-2.5 rounded-full transition font-medium ${inputMode === "upload"
+                    ? "bg-black text-white"
+                    : "bg-transparent text-gray-700 hover:bg-white"
+                    }`}
+                >
+                  Upload your resume
+                </button>
 
-              <input
-                type="file"
-                accept="application/pdf"
-                onChange={(e) => {
-                  const file = e.target.files?.[0] || null;
-                  setResumeFile(file);
-                  // Clear the text input if a file is uploaded
-                  if (file) setResumeText("");
-                }}
-                className="block w-full text-sm text-gray-700
-                          file:mr-4 file:py-2 file:px-4
-                          file:rounded-lg file:border-0
-                          file:bg-gray-100 file:text-gray-800
-                          hover:file:bg-gray-200"
-              />
-
-              {resumeFile && (
-                <p className="mt-2 text-sm text-gray-600">
-                  Selected: <span className="font-medium">{resumeFile.name}</span>
-                </p>
-              )}
+                <button
+                  onClick={() => {
+                    setInputMode("paste");
+                    setResumeFile(null);
+                  }}
+                  className={`px-5 py-2.5 rounded-full transition font-medium ${inputMode === "paste"
+                    ? "bg-black text-white"
+                    : "bg-transparent text-gray-700 hover:bg-white"
+                    }`}
+                >
+                  Copy / Paste
+                </button>
+              </div>
             </div>
 
-            <div className="flex items-center gap-3 my-4">
-              <div className="h-px bg-gray-200 flex-1" />
-              <span className="text-sm text-gray-500">OR</span>
-              <div className="h-px bg-gray-200 flex-1" />
+            <div
+              className={`transition-all duration-500 ease-out overflow-hidden ${inputMode === "upload"
+                ? "opacity-100 translate-y-0 max-h-72 mb-6"
+                : "opacity-0 -translate-y-1 max-h-0 mb-0 pointer-events-none"
+                }`}
+            >
+              <div className="border border-gray-200 rounded-xl p-6 bg-gray-50">
+                <label className="block font-semibold text-blue-900 mb-3">
+                  Upload your PDF resume
+                </label>
+
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] || null;
+                    setResumeFile(file);
+                    if (file) setResumeText("");
+                  }}
+                  className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-white file:text-gray-800 hover:file:bg-gray-200"
+                />
+
+                {resumeFile && (
+                  <p className="mt-3 text-sm text-gray-600">
+                    Selected: <span className="font-medium">{resumeFile.name}</span>
+                  </p>
+                )}
+              </div>
             </div>
 
-            {/* Text Input Section */}
-            <textarea
-              value={resumeText}
-              onChange={(e) => {
-                setResumeText(e.target.value);
-                // Clear the file upload if text is typed
-                if (e.target.value.trim().length > 0) setResumeFile(null);
-              }}
-              placeholder="Paste your resume text here..."
-              className="w-full h-48 p-4 border rounded-lg mb-6 text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black"
-            />
+            <div
+              className={`transition-all duration-500 ease-out overflow-hidden ${inputMode === "paste"
+                ? "opacity-100 translate-y-0 max-h-[28rem] mb-6"
+                : "opacity-0 -translate-y-1 max-h-0 mb-0 pointer-events-none"
+                }`}
+            >
+              <div className="border border-gray-200 rounded-xl p-6 bg-gray-50">
+                <label className="block font-semibold text-blue-900 mb-3">
+                  Paste your resume content
+                </label>
 
-            {/* Submit Button */}
+                <textarea
+                  value={resumeText}
+                  onChange={(e) => {
+                    setResumeText(e.target.value);
+                    if (e.target.value.trim().length > 0) setResumeFile(null);
+                  }}
+                  placeholder="Paste your resume text here..."
+                  className="w-full h-56 p-4 border rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black bg-white"
+                />
+              </div>
+            </div>
+
             <button
               onClick={handleGenerate}
-              disabled={loading}
-              className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition disabled:opacity-60"
+              disabled={!canGenerate}
+              className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {loading ? "Generating..." : "Generate Website Files"}
+              Generate Portfolio
             </button>
           </div>
         </div>
       )}
 
-      {/* View 2: The Generated Code (shown after the API successfully returns HTML/CSS) */}
       {files && (
         <div className="max-w-5xl mx-auto">
           <div className="bg-white rounded-xl shadow-lg p-8 mb-6 text-black">
@@ -251,9 +286,11 @@ export default function Home() {
                 </p>
               </div>
 
-              {/* Button to clear results and go back to the input form */}
               <button
-                onClick={() => setFiles(null)}
+                onClick={() => {
+                  setFiles(null);
+                  setLoading(false);
+                }}
                 className="border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition text-black"
               >
                 Back
@@ -261,14 +298,13 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Render the HTML code block */}
           <CodeBlock
             title="HTML"
             value={files.html}
             filename="index.html"
             mimeType="text/html;charset=utf-8"
           />
-          {/* Render the CSS code block */}
+
           <CodeBlock
             title="CSS"
             value={files.css}

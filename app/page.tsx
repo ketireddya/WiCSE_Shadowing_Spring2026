@@ -103,6 +103,189 @@ function LoadingScreen() {
   );
 }
 
+/**
+ * Adds a cleaner default portfolio style to the AI-generated files.
+ * This keeps the output screen in your app the same,
+ * but improves the actual generated website files the user downloads.
+ */
+function enhanceGeneratedFiles(html: string, css: string): WebsiteFiles {
+  const enhancedCss = `
+/* ===== Enhanced portfolio styling added by app ===== */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: linear-gradient(to bottom, #eef4ff 0%, #f8fbff 35%, #ffffff 100%);
+  color: #16324f;
+  text-align: center;
+  line-height: 1.6;
+}
+
+body > * {
+  width: min(960px, calc(100% - 32px));
+  margin-left: auto;
+  margin-right: auto;
+}
+
+header,
+.hero,
+.banner {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  padding: 56px 24px;
+  border-radius: 24px;
+  margin-top: 32px;
+  margin-bottom: 28px;
+  box-shadow: 0 18px 40px rgba(37, 99, 235, 0.22);
+}
+
+header h1,
+.hero h1,
+.banner h1 {
+  margin: 0 0 12px 0;
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  line-height: 1.15;
+}
+
+header p,
+.hero p,
+.banner p,
+header a,
+.hero a,
+.banner a {
+  color: white;
+}
+
+main,
+.container,
+.content,
+.wrapper {
+  width: min(960px, calc(100% - 32px));
+  margin: 0 auto 40px auto;
+}
+
+section {
+  background: white;
+  border-radius: 22px;
+  padding: 28px 24px;
+  margin: 22px auto;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.08);
+}
+
+section h2 {
+  margin-top: 0;
+  margin-bottom: 14px;
+  color: #1d4ed8;
+  font-size: 1.55rem;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+li,
+a,
+span {
+  text-align: center;
+}
+
+p {
+  margin: 10px auto;
+  max-width: 720px;
+}
+
+ul,
+ol {
+  list-style-position: inside;
+  padding-left: 0;
+  margin: 0 auto;
+  max-width: 760px;
+}
+
+li {
+  margin: 8px 0;
+}
+
+a {
+  color: #1d4ed8;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 14px;
+}
+
+footer {
+  margin: 30px auto 50px auto;
+  padding: 20px;
+  color: #5b6b7f;
+}
+
+/* Helps common AI-generated wrappers look centered */
+.resume-container,
+.page-container,
+.portfolio-container,
+.content-container {
+  width: min(960px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+/* Turns common section-like wrappers into cards too */
+.resume-section,
+.portfolio-section,
+.card,
+.section-card {
+  background: white;
+  border-radius: 22px;
+  padding: 28px 24px;
+  margin: 22px auto;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.08);
+}
+`;
+
+  let enhancedHtml = html;
+
+  // If the HTML does not already include a viewport meta tag, add one.
+  if (!/name=["']viewport["']/i.test(enhancedHtml)) {
+    enhancedHtml = enhancedHtml.replace(
+      /<head>/i,
+      `<head>\n<meta name="viewport" content="width=device-width, initial-scale=1.0" />`
+    );
+  }
+
+  // If the HTML contains <main> without section tags,
+  // wrap direct children divs in a common container class when possible.
+  // This keeps the change lightweight and avoids breaking structure.
+  if (!/class=["'][^"']*(portfolio-container|resume-container|content-container)[^"']*["']/i.test(enhancedHtml)) {
+    enhancedHtml = enhancedHtml.replace(
+      /<main>/i,
+      `<main class="portfolio-container">`
+    );
+  }
+
+  return {
+    html: enhancedHtml,
+    css: `${css}\n\n${enhancedCss}`,
+  };
+}
+
 export default function Home() {
   const [resumeText, setResumeText] = useState("");
   const [resumeFile, setResumeFile] = useState<File | null>(null);
@@ -148,10 +331,12 @@ export default function Home() {
         return;
       }
 
-      setFiles({
-        html: String(data?.html ?? ""),
-        css: String(data?.css ?? ""),
-      });
+      const improvedFiles = enhanceGeneratedFiles(
+        String(data?.html ?? ""),
+        String(data?.css ?? "")
+      );
+
+      setFiles(improvedFiles);
     } catch (error) {
       console.error(error);
       alert("Something went wrong.");
@@ -185,8 +370,8 @@ export default function Home() {
                     setResumeText("");
                   }}
                   className={`px-5 py-2.5 rounded-full transition font-medium ${inputMode === "upload"
-                    ? "bg-black text-white"
-                    : "bg-transparent text-gray-700 hover:bg-white"
+                      ? "bg-black text-white"
+                      : "bg-transparent text-gray-700 hover:bg-white"
                     }`}
                 >
                   Upload your resume
@@ -198,8 +383,8 @@ export default function Home() {
                     setResumeFile(null);
                   }}
                   className={`px-5 py-2.5 rounded-full transition font-medium ${inputMode === "paste"
-                    ? "bg-black text-white"
-                    : "bg-transparent text-gray-700 hover:bg-white"
+                      ? "bg-black text-white"
+                      : "bg-transparent text-gray-700 hover:bg-white"
                     }`}
                 >
                   Copy / Paste
@@ -209,8 +394,8 @@ export default function Home() {
 
             <div
               className={`transition-all duration-500 ease-out overflow-hidden ${inputMode === "upload"
-                ? "opacity-100 translate-y-0 max-h-72 mb-6"
-                : "opacity-0 -translate-y-1 max-h-0 mb-0 pointer-events-none"
+                  ? "opacity-100 translate-y-0 max-h-72 mb-6"
+                  : "opacity-0 -translate-y-1 max-h-0 mb-0 pointer-events-none"
                 }`}
             >
               <div className="border border-gray-200 rounded-xl p-6 bg-gray-50">
@@ -239,8 +424,8 @@ export default function Home() {
 
             <div
               className={`transition-all duration-500 ease-out overflow-hidden ${inputMode === "paste"
-                ? "opacity-100 translate-y-0 max-h-[28rem] mb-6"
-                : "opacity-0 -translate-y-1 max-h-0 mb-0 pointer-events-none"
+                  ? "opacity-100 translate-y-0 max-h-[28rem] mb-6"
+                  : "opacity-0 -translate-y-1 max-h-0 mb-0 pointer-events-none"
                 }`}
             >
               <div className="border border-gray-200 rounded-xl p-6 bg-gray-50">

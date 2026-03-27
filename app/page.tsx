@@ -1,13 +1,17 @@
-"use client";
-import { useMemo, useState } from "react";
+"use client"; // This tells Next.js that this component runs in the user's browser, allowing browser features like interactivity (clicking buttons) and state.
 
+import { useMemo, useState } from "react"; // Importing React tools. useState lets us store changing data, useMemo helps optimize performance.
+
+// We define what our generated website files will contain: HTML and CSS text.
 type WebsiteFiles = {
   html: string;
   css: string;
 };
 
+// Represents how the user chose to provide their resume: uploading a file, pasting text, or hasn't chosen yet (null).
 type InputMode = "upload" | "paste" | null;
 
+// A helper function that forces the browser to download a text file to the user's computer.
 function downloadTextFile(filename: string, content: string, mimeType: string) {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
@@ -22,6 +26,8 @@ function downloadTextFile(filename: string, content: string, mimeType: string) {
   URL.revokeObjectURL(url);
 }
 
+// A component that displays a block of code (like HTML or CSS) on the screen.
+// It also provides buttons to "Copy" the code or "Download" it as a file.
 function CodeBlock({
   title,
   value,
@@ -84,6 +90,8 @@ function CodeBlock({
   );
 }
 
+// A simple Loading Screen component that shows a pulsing animation and some message text
+// while we are waiting for the AI to generate the portfolio website.
 function LoadingScreen() {
   return (
     <div className="min-h-screen flex items-center justify-center px-6">
@@ -286,17 +294,23 @@ footer {
   };
 }
 
+// This is the main "Home" page component. It contains all the logic for our website generator interface.
 export default function Home() {
-  const [resumeText, setResumeText] = useState("");
-  const [resumeFile, setResumeFile] = useState<File | null>(null);
-  const [files, setFiles] = useState<WebsiteFiles | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [inputMode, setInputMode] = useState<InputMode>(null);
+  // useState stores variables that, when changed, tell the page to update what's shown on screen.
+  const [resumeText, setResumeText] = useState(""); // Stores whatever text the user pasted in the text box.
+  const [resumeFile, setResumeFile] = useState<File | null>(null); // Stores the PDF file if the user chose to upload one.
+  const [files, setFiles] = useState<WebsiteFiles | null>(null); // Stores the fully generated HTML and CSS code, if generation is complete.
+  const [loading, setLoading] = useState(false); // A simple true/false state to know if we are currently waiting for the AI.
+  const [inputMode, setInputMode] = useState<InputMode>(null); // Tracks whether they clicked "Upload" or "Paste".
 
+  // useMemo remembers ('memoizes') this true/false calculation so we don't recalculate it unnecessarily.
+  // It returns 'true' if we either have a file uploaded OR if there's some text pasted. 
+  // We use this to decide whether to enable or disable the "Generate Portfolio" button.
   const canGenerate = useMemo(() => {
     return Boolean(resumeFile) || resumeText.trim().length > 0;
   }, [resumeFile, resumeText]);
 
+  // The function that runs when the user clicks the "Generate Portfolio" button.
   const handleGenerate = async () => {
     try {
       if (!canGenerate) {
@@ -347,8 +361,10 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gray-100 p-6">
+      {/* If 'loading' is true and we don't have 'files' yet, show the LoadingScreen component */}
       {loading && !files && <LoadingScreen />}
 
+      {/* If we aren't loading and don't have files yet, show the initial input form */}
       {!loading && !files && (
         <div className="min-h-screen flex items-center justify-center">
           <div className="bg-white shadow-lg rounded-xl p-10 w-full max-w-3xl">
@@ -456,6 +472,7 @@ export default function Home() {
         </div>
       )}
 
+      {/* If generation is entirely finished and 'files' exist, show the result screen with the code blocks */}
       {files && (
         <div className="max-w-5xl mx-auto">
           <div className="bg-white rounded-xl shadow-lg p-8 mb-6 text-black">

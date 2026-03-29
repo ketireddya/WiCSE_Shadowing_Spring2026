@@ -56,34 +56,33 @@ function CodeBlock({
   };
 
   return (
-    <section className="bg-white rounded-xl shadow-lg p-6 mb-6">
-      <div className="flex items-start justify-between gap-4 mb-3">
+    <section className="glass-card p-6 mb-8 animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-5">
         <div>
-          <h2 className="text-xl font-semibold text-black">{title}</h2>
-          <p className="text-sm text-gray-600">
-            Create a file named <span className="font-mono">{filename}</span> and paste
-            this in - or download it directly.
+          <h2 className="text-xl font-semibold text-white">{title}</h2>
+          <p className="text-sm text-subtext mt-1">
+            Save as <span className="font-mono text-blue-300">{filename}</span> or download directly.
           </p>
         </div>
 
-        <div className="shrink-0 flex items-center gap-2">
+        <div className="shrink-0 flex items-center gap-3">
           <button
             onClick={copy}
-            className="border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition text-black"
+            className="btn-secondary px-5 py-2 text-sm h-10"
           >
             {copied ? "Copied!" : "Copy"}
           </button>
 
           <button
             onClick={download}
-            className="border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition text-black"
+            className="btn-primary px-5 py-2 text-sm h-10 w-auto"
           >
             Download
           </button>
         </div>
       </div>
 
-      <pre className="w-full overflow-auto rounded-lg border bg-gray-50 p-4 text-sm text-black">
+      <pre className="w-full overflow-auto rounded-xl border border-slate-700/50 bg-[#020617]/80 p-5 text-sm text-blue-50 shadow-inner">
         <code>{value}</code>
       </pre>
     </section>
@@ -94,17 +93,19 @@ function CodeBlock({
 // while we are waiting for the AI to generate the portfolio website.
 function LoadingScreen() {
   return (
-    <div className="min-h-screen flex items-center justify-center px-6">
-      <div className="bg-white shadow-lg rounded-xl p-10 w-full max-w-xl text-center">
-        <div className="flex justify-center mb-6">
-          <div className="w-16 h-16 border-4 border-black rounded-md animate-pulse" />
+    <div className="bg-cinematic flex items-center justify-center absolute inset-0 z-50">
+      <div className="glass-card p-12 text-center max-w-md w-full animate-fade-in flex flex-col items-center">
+        <div className="relative w-20 h-20 mb-8">
+           <div className="absolute inset-0 border-4 border-blue-500/20 rounded-2xl rotate-3" />
+           <div className="absolute inset-0 border-4 border-blue-400 rounded-2xl animate-pulse" />
+           <div className="absolute inset-0 bg-blue-500/20 blur-xl animate-pulse" />
         </div>
 
-        <h2 className="text-2xl font-semibold text-black mb-2">
-          Generating your portfolio
+        <h2 className="text-2xl font-semibold text-white mb-3">
+          Processing...
         </h2>
-        <p className="text-gray-600">
-          Taking in your resume, sending it to the AI, and preparing your website files.
+        <p className="text-subtext">
+          Taking in your context and preparing your files.
         </p>
       </div>
     </div>
@@ -484,32 +485,54 @@ export default function Home() {
   // 1. SELECTOR ROUTE
   if (appRoute === "selector") {
     return (
-      <main className="min-h-screen bg-gray-100 p-6 flex flex-col items-center justify-center">
-        <div className="bg-white shadow-lg rounded-xl p-10 w-full max-w-3xl">
-          <h1 className="text-4xl font-bold mb-4 text-center text-blue-900">
-            Portfolio Generator
-          </h1>
-          <p className="text-gray-600 mb-8 text-center max-w-2xl mx-auto">
-            Which type of portfolio do you want to create?
-          </p>
-
-          <div className="flex justify-center mb-8">
-            <div className="inline-flex items-center gap-2 rounded-full bg-gray-100 p-2 border border-gray-200">
-              <button
-                onClick={() => setAppRoute("website")}
-                className="px-5 py-2.5 rounded-full transition font-medium bg-transparent text-gray-700 hover:bg-white"
-              >
-                One-Page Portfolio Website
-              </button>
-
-              <button
-                onClick={() => setAppRoute("pdf")}
-                className="px-5 py-2.5 rounded-full transition font-medium bg-transparent text-gray-700 hover:bg-white"
-              >
-                Creative PDF Portfolio
-              </button>
-            </div>
+      <main className="bg-cinematic flex items-center justify-center">
+        <div className="w-full max-w-[1200px] grid md:grid-cols-2 gap-12 lg:gap-20 items-center animate-fade-in py-10">
+          
+          {/* Left Side: Dramatic Typography Header */}
+          <div className="text-center md:text-left">
+            <h1 className="text-6xl lg:text-7xl font-bold tracking-[0.2em] uppercase leading-[1.1] mb-6 text-white drop-shadow-lg">
+              Portfolio<br />Builder
+            </h1>
+            <p className="text-subtext text-lg max-w-md mx-auto md:mx-0 leading-relaxed">
+              Create a simple on-demand personal website within minutes. Choose whether you want to upload your resume as a PDF or build a visual portfolio.
+            </p>
           </div>
+
+          {/* Right Side: Glass Selection Cards */}
+          <div className="flex flex-col gap-6">
+            <button
+              onClick={() => setAppRoute("website")}
+              className="glass-card glass-card-hover p-8 md:p-10 text-left relative overflow-hidden group"
+            >
+              <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="flex items-start gap-5 relative z-10 w-full">
+                <div className="shrink-0 w-14 h-14 rounded-xl bg-blue-500/10 border border-blue-400/20 flex items-center justify-center">
+                  <svg className="w-7 h-7 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold mb-2 text-white">One-Page Website Generator</h3>
+                  <p className="text-subtext text-sm leading-relaxed">Upload your resume PDF or paste text to automatically generate a coded modular landing page.</p>
+                </div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => setAppRoute("pdf")}
+              className="glass-card glass-card-hover p-8 md:p-10 text-left relative overflow-hidden group"
+            >
+              <div className="absolute inset-0 bg-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="flex items-start gap-5 relative z-10 w-full">
+                <div className="shrink-0 w-14 h-14 rounded-xl bg-indigo-500/10 border border-indigo-400/20 flex items-center justify-center">
+                  <svg className="w-7 h-7 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold mb-2 text-white">Creative PDF Portfolio</h3>
+                  <p className="text-subtext text-sm leading-relaxed">Upload vibrant screenshots and project descriptions to generate a custom multi-page PDF.</p>
+                </div>
+              </div>
+            </button>
+          </div>
+          
         </div>
       </main>
     );
@@ -520,16 +543,22 @@ export default function Home() {
     // Temporary Loading Screen: shown during API call
     if (pdfLoading && !pdfResult) {
       return (
-        <main className="min-h-screen bg-gray-100 p-6 flex items-center justify-center">
-          <div className="bg-white shadow-lg rounded-xl p-10 w-full max-w-xl text-center">
-            <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 border-4 border-black rounded-md animate-pulse" />
+        <main className="bg-cinematic flex items-center justify-center absolute inset-0 z-50">
+          <div className="glass-card p-12 text-center max-w-md w-full animate-fade-in flex flex-col items-center">
+            <div className="relative w-24 h-24 mb-8">
+               <div className="absolute inset-0 border-4 border-indigo-500/20 rounded-2xl rotate-3" />
+               <div className="absolute inset-0 border-4 border-indigo-400 rounded-2xl animate-pulse" />
+               <div className="absolute inset-0 bg-indigo-500/20 blur-xl animate-pulse" />
+               {/* inner icon stub */}
+               <div className="absolute inset-0 flex items-center justify-center">
+                 <svg className="w-8 h-8 text-indigo-300 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+               </div>
             </div>
-            <h2 className="text-2xl font-semibold text-black mb-2">
+            <h2 className="text-2xl font-semibold text-white mb-3">
               Generating your PDF
             </h2>
-            <p className="text-gray-600">
-              Laying out pages, inserting images, and preparing your creative portfolio.
+            <p className="text-subtext">
+              Laying out pages, embedding full-resolution images, and rendering typography.
             </p>
           </div>
         </main>
@@ -539,18 +568,22 @@ export default function Home() {
     // Success Screen: shown after the loading is complete securely processing API Blobs into DOM clicks natively
     if (!pdfLoading && pdfResult) {
       return (
-        <main className="min-h-screen bg-gray-100 p-6 flex flex-col items-center justify-center">
-          <div className="bg-white shadow-lg rounded-xl p-10 w-full max-w-2xl text-center">
-            <h1 className="text-4xl font-bold mb-4 text-blue-900">
+        <main className="bg-cinematic flex items-center justify-center">
+          <div className="glass-card p-12 w-full max-w-lg text-center animate-fade-in flex flex-col items-center">
+            <div className="w-20 h-20 bg-green-500/10 border border-green-500/30 rounded-2xl flex items-center justify-center mb-8">
+              <svg className="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+            </div>
+          
+            <h1 className="text-3xl font-bold mb-3 text-white">
               Your portfolio is ready!
             </h1>
-            <p className="text-gray-600 mb-8 max-w-xl mx-auto text-lg">
-              Your creative PDF portfolio has been successfully generated. Click the button below to download it to your device.
+            <p className="text-subtext mb-10 leading-relaxed">
+              Your stunning creative PDF mapped cleanly over our design tokens has been successfully generated.
             </p>
 
             <button
               onClick={handleDownloadPdf}
-              className="w-full bg-black text-white py-4 rounded-xl hover:bg-gray-800 transition shadow-lg font-bold text-lg mb-6"
+              className="btn-primary py-4 text-lg mb-6 w-full"
             >
               Download PDF
             </button>
@@ -559,7 +592,7 @@ export default function Home() {
               onClick={() => {
                 setPdfResult(null); // Reset to go back to editing seamlessly
               }}
-              className="mt-4 text-gray-500 hover:text-black underline transition font-medium"
+              className="mt-2 text-indigo-300 hover:text-white transition font-medium"
             >
               Go Back and Edit
             </button>
@@ -569,55 +602,56 @@ export default function Home() {
     }
 
     return (
-      <main className="min-h-screen bg-gray-100 p-6 flex flex-col items-center py-10">
-        <div className="w-full max-w-4xl mb-6">
+      <main className="bg-cinematic flex flex-col items-center py-10 animate-fade-in relative">
+        <div className="w-full max-w-5xl mb-6 px-4">
           <button
             onClick={() => setAppRoute("selector")}
-            className="text-gray-600 hover:text-black transition flex items-center gap-2 font-medium"
+            className="flex items-center gap-2 text-indigo-300 hover:text-white transition font-medium"
           >
-            &larr; Back to selection
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+            Back to selection
           </button>
         </div>
 
-        <div className="bg-white shadow-lg rounded-xl p-10 w-full max-w-4xl">
-          <h1 className="text-4xl font-bold mb-4 text-center text-blue-900">
-            Creative PDF Portfolio
+        <div className="glass-card p-6 md:p-10 w-full max-w-5xl mx-4">
+          <h1 className="text-3xl md:text-5xl font-bold mb-4 text-center text-white tracking-wide uppercase">
+            Creative PDF
           </h1>
-          <p className="text-gray-600 mb-8 text-center max-w-2xl mx-auto">
+          <p className="text-subtext mb-10 text-center max-w-2xl mx-auto text-lg leading-relaxed">
             Provide portfolio entries to build your creative PDF portfolio. For each entry, upload an image and add a title and description.
           </p>
 
-          <div className="flex flex-col sm:flex-row justify-between items-center bg-gray-50 p-6 rounded-xl mb-8 border border-gray-200">
-            <span className="font-semibold text-blue-900 text-lg">Number of works:</span>
-            <div className="flex items-center gap-4 mt-4 sm:mt-0">
+          <div className="flex flex-col sm:flex-row justify-between items-center bg-slate-900/40 p-6 rounded-2xl mb-10 border border-slate-700/50 shadow-inner">
+            <span className="font-semibold text-white text-lg">Number of portfolio works:</span>
+            <div className="flex items-center gap-6 mt-4 sm:mt-0 bg-slate-800/80 rounded-full p-2 border border-slate-700/50">
               <button
                 onClick={() => updateNumWorks(numWorks - 1)}
                 disabled={numWorks <= 1}
-                className="w-12 h-12 rounded-full bg-white border border-gray-300 text-2xl font-bold hover:bg-gray-100 disabled:opacity-50 transition"
+                className="w-10 h-10 rounded-full bg-slate-700/50 text-white flex items-center justify-center hover:bg-slate-600 disabled:opacity-30 transition cursor-pointer"
               >
-                -
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" /></svg>
               </button>
-              <span className="font-bold text-xl w-8 text-center">{numWorks}</span>
+              <span className="font-bold text-xl w-6 text-center text-white">{numWorks}</span>
               <button
                 onClick={() => updateNumWorks(numWorks + 1)}
                 disabled={numWorks >= 20}
-                className="w-12 h-12 rounded-full bg-white border border-gray-300 text-2xl font-bold hover:bg-gray-100 disabled:opacity-50 transition"
+                className="w-10 h-10 rounded-full bg-blue-600/80 text-white flex items-center justify-center hover:bg-blue-500 disabled:opacity-30 transition shadow-lg cursor-pointer"
               >
-                +
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
               </button>
             </div>
           </div>
 
           <div className="space-y-8">
             {pdfEntries.map((entry, index) => (
-              <div key={index} className="border border-gray-200 rounded-xl p-6 bg-gray-50 flex flex-col md:flex-row gap-6">
+              <div key={index} className="bg-slate-900/30 border border-slate-700/50 rounded-2xl p-6 lg:p-8 flex flex-col md:flex-row gap-8 shadow-sm">
 
                 {/* Left side: Image Upload */}
-                <div className="flex-1">
-                  <h3 className="font-semibold text-blue-900 mb-3">
+                <div className="flex-1 flex flex-col">
+                  <h3 className="font-medium text-indigo-300 mb-3 text-sm uppercase tracking-wider">
                     Work {index + 1} Image
                   </h3>
-                  <div className="border border-gray-300 rounded-lg p-6 bg-white text-center h-full min-h-[220px] flex flex-col items-center justify-center">
+                  <div className="input-glass h-full min-h-[240px] flex flex-col items-center justify-center relative overflow-hidden group border-dashed hover:border-blue-500/50 transition-colors">
                     <input
                       type="file"
                       accept=".jpeg, .jpg, .png"
@@ -625,20 +659,33 @@ export default function Home() {
                         const file = e.target.files?.[0] || null;
                         updatePdfEntry(index, "image", file);
                       }}
-                      className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-gray-100 file:text-gray-800 hover:file:bg-gray-200"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                     />
+                    <div className="flex flex-col items-center justify-center pointer-events-none text-center">
+                       <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                          <svg className="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                       </div>
+                       <span className="text-white font-medium mb-1">Click to upload image</span>
+                       <span className="text-slate-500 text-xs uppercase tracking-wider">JPEG, PNG</span>
+                    </div>
+
                     {entry.image && (
-                      <p className="mt-4 text-sm text-gray-600 truncate max-w-full">
-                        Selected: <span className="font-medium">{entry.image.name}</span>
-                      </p>
+                      <div className="absolute inset-0 bg-[#020617] flex items-center justify-center p-4 border-2 border-blue-500/50 rounded-xl z-20 pointer-events-none">
+                        <div className="text-center w-full">
+                           <svg className="w-8 h-8 text-blue-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                           <p className="text-sm text-blue-100 truncate w-full px-4 text-center">
+                             {entry.image.name}
+                           </p>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>
 
                 {/* Right side: Title & Description */}
-                <div className="flex-1 flex flex-col">
-                  <div className="mb-4">
-                    <label className="block font-semibold text-blue-900 mb-2">
+                <div className="flex-1 flex flex-col gap-6">
+                  <div>
+                    <label className="block font-medium text-indigo-300 mb-2 text-sm uppercase tracking-wider">
                       Work {index + 1} Title
                     </label>
                     <input
@@ -646,18 +693,18 @@ export default function Home() {
                       value={entry.title}
                       onChange={(e) => updatePdfEntry(index, "title", e.target.value)}
                       placeholder="e.g. Modern E-commerce Redesign"
-                      className="w-full p-3 border rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black bg-white"
+                      className="input-glass"
                     />
                   </div>
                   <div className="flex-1 flex flex-col">
-                    <label className="block font-semibold text-blue-900 mb-2">
+                    <label className="block font-medium text-indigo-300 mb-2 text-sm uppercase tracking-wider">
                       Work {index + 1} Description
                     </label>
                     <textarea
                       value={entry.description}
                       onChange={(e) => updatePdfEntry(index, "description", e.target.value)}
-                      placeholder="Describe the project, your role, and the outcomes..."
-                      className="w-full flex-1 p-3 border rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black bg-white min-h-[120px] resize-y"
+                      placeholder="Describe the project overview, your personal role, and the key outcomes..."
+                      className="input-glass flex-1 min-h-[140px] resize-y"
                     />
                   </div>
                 </div>
@@ -668,65 +715,67 @@ export default function Home() {
 
           {/* Validation Error Banner */}
           {pdfError && (
-            <div className="mt-8 p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg text-center font-medium">
+            <div className="mt-8 p-5 bg-red-900/30 border border-red-500/50 text-red-200 rounded-xl flex items-center gap-4 animate-fade-in font-medium">
+              <svg className="w-6 h-6 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               {pdfError}
             </div>
           )}
 
-          <button
-            onClick={handleGeneratePdf}
-            className="w-full mt-8 bg-black text-white py-4 rounded-xl hover:bg-gray-800 transition shadow font-bold text-lg"
-          >
-            Generate Portfolio
-          </button>
+          <div className="mt-10 pt-8 border-t border-slate-700/50 lg:w-1/2 mx-auto">
+            <button
+              onClick={handleGeneratePdf}
+              className="btn-primary py-4 text-lg w-full"
+            >
+              Generate Portfolio
+            </button>
+          </div>
         </div>
       </main>
     );
   }
 
   // 3. ONE-PAGE WEBSITE ROUTE
-  // Uses the original code
+  // Uses the original logic mapping to the new visual style
   return (
-    <main className="min-h-screen bg-gray-100 p-6">
+    <main className="bg-cinematic flex flex-col items-center py-10 animate-fade-in relative min-h-screen z-0">
       {/* If 'loading' is true and we don't have 'files' yet, show the LoadingScreen component */}
       {loading && !files && <LoadingScreen />}
 
       {/* If we aren't loading and don't have files yet, show the initial input form */}
       {!loading && !files && (
-        <div className="min-h-screen flex flex-col items-center justify-center">
-          <div className="w-full max-w-3xl mb-6">
+        <div className="flex flex-col items-center w-full max-w-4xl px-4 relative z-10">
+          <div className="w-full mb-6">
             <button
               onClick={() => setAppRoute("selector")}
-              className="text-gray-600 hover:text-black transition flex items-center gap-2 font-medium"
+              className="flex items-center gap-2 text-indigo-300 hover:text-white transition font-medium w-max"
             >
-              &larr; Back to selection
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+              Back to selection
             </button>
           </div>
 
-          <div className="bg-white shadow-lg rounded-xl p-10 w-full max-w-3xl">
-            <h1 className="text-4xl font-bold mb-4 text-center text-blue-900">
-              AI One-Page Website Generator
+          <div className="glass-card p-6 md:p-12 w-full text-center">
+            <h1 className="text-3xl md:text-5xl font-bold mb-4 text-white uppercase tracking-wide">
+              Website Generator
             </h1>
 
-            <p className="text-gray-600 mb-8 text-center max-w-2xl mx-auto">
-              Turn your resume into a simple personal website. Choose whether you want
-              to upload your resume as a PDF or paste the content directly, and the
-              program will generate your website files for you.
+            <p className="text-subtext mb-10 max-w-2xl mx-auto text-lg leading-relaxed">
+              Upload your resume as a PDF or paste the content directly, and our engine will code a responsive portfolio for you instantly.
             </p>
 
-            <div className="flex justify-center mb-8">
-              <div className="inline-flex items-center gap-2 rounded-full bg-gray-100 p-2 border border-gray-200">
+            <div className="flex justify-center mb-10">
+              <div className="inline-flex items-center gap-2 rounded-full bg-slate-900/60 p-2 border border-slate-700/50 shadow-inner">
                 <button
                   onClick={() => {
                     setInputMode("upload");
                     setResumeText("");
                   }}
-                  className={`px-5 py-2.5 rounded-full transition font-medium ${inputMode === "upload"
-                    ? "bg-black text-white"
-                    : "bg-transparent text-gray-700 hover:bg-white"
+                  className={`px-6 py-3 rounded-full transition-all font-medium duration-300 ${inputMode === "upload"
+                    ? "bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]"
+                    : "bg-transparent text-indigo-200 hover:text-white hover:bg-slate-800"
                     }`}
                 >
-                  Upload your resume
+                  Upload PDF
                 </button>
 
                 <button
@@ -734,9 +783,9 @@ export default function Home() {
                     setInputMode("paste");
                     setResumeFile(null);
                   }}
-                  className={`px-5 py-2.5 rounded-full transition font-medium ${inputMode === "paste"
-                    ? "bg-black text-white"
-                    : "bg-transparent text-gray-700 hover:bg-white"
+                  className={`px-6 py-3 rounded-full transition-all font-medium duration-300 ${inputMode === "paste"
+                    ? "bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]"
+                    : "bg-transparent text-indigo-200 hover:text-white hover:bg-slate-800"
                     }`}
                 >
                   Copy / Paste
@@ -745,44 +794,55 @@ export default function Home() {
             </div>
 
             <div
-              className={`transition-all duration-500 ease-out overflow-hidden ${inputMode === "upload"
-                ? "opacity-100 translate-y-0 max-h-72 mb-6"
-                : "opacity-0 -translate-y-1 max-h-0 mb-0 pointer-events-none"
+              className={`transition-all duration-500 ease-out overflow-hidden text-left mx-auto max-w-2xl ${inputMode === "upload"
+                ? "opacity-100 translate-y-0 max-h-72 mb-8"
+                : "opacity-0 -translate-y-4 max-h-0 mb-0 pointer-events-none"
                 }`}
             >
-              <div className="border border-gray-200 rounded-xl p-6 bg-gray-50">
-                <label className="block font-semibold text-blue-900 mb-3">
-                  Upload your PDF resume
+              <div className="bg-slate-900/40 border border-slate-700/50 rounded-2xl p-8">
+                <label className="block font-medium text-indigo-300 mb-4 uppercase tracking-wider text-sm">
+                  Select your PDF resume
                 </label>
 
-                <input
-                  type="file"
-                  accept="application/pdf"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0] || null;
-                    setResumeFile(file);
-                    if (file) setResumeText("");
-                  }}
-                  className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-white file:text-gray-800 hover:file:bg-gray-200"
-                />
+                <div className="input-glass h-[140px] flex flex-col items-center justify-center relative overflow-hidden group border-dashed hover:border-blue-500/50 transition-colors">
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      setResumeFile(file);
+                      if (file) setResumeText("");
+                    }}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  />
+                  <div className="flex flex-col items-center justify-center pointer-events-none transition-transform group-hover:scale-105">
+                     <svg className="w-8 h-8 text-indigo-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+                     <span className="text-white font-medium">Click to upload PDF</span>
+                  </div>
 
-                {resumeFile && (
-                  <p className="mt-3 text-sm text-gray-600">
-                    Selected: <span className="font-medium">{resumeFile.name}</span>
-                  </p>
-                )}
+                  {resumeFile && (
+                    <div className="absolute inset-0 bg-[#020617] flex items-center justify-center p-4 border-2 border-blue-500/50 rounded-xl z-20 pointer-events-none">
+                      <div className="text-center w-full">
+                         <svg className="w-8 h-8 text-green-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                         <p className="text-sm font-medium text-blue-100 truncate w-full px-4">
+                           {resumeFile.name}
+                         </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
             <div
-              className={`transition-all duration-500 ease-out overflow-hidden ${inputMode === "paste"
-                ? "opacity-100 translate-y-0 max-h-[28rem] mb-6"
-                : "opacity-0 -translate-y-1 max-h-0 mb-0 pointer-events-none"
+              className={`transition-all duration-500 ease-out overflow-hidden text-left mx-auto max-w-2xl ${inputMode === "paste"
+                ? "opacity-100 translate-y-0 max-h-[32rem] mb-8"
+                : "opacity-0 -translate-y-4 max-h-0 mb-0 pointer-events-none"
                 }`}
             >
-              <div className="border border-gray-200 rounded-xl p-6 bg-gray-50">
-                <label className="block font-semibold text-blue-900 mb-3">
-                  Paste your resume content
+              <div className="bg-slate-900/40 border border-slate-700/50 rounded-2xl p-8">
+                <label className="block font-medium text-indigo-300 mb-4 uppercase tracking-wider text-sm">
+                  Paste your resume text
                 </label>
 
                 <textarea
@@ -791,60 +851,56 @@ export default function Home() {
                     setResumeText(e.target.value);
                     if (e.target.value.trim().length > 0) setResumeFile(null);
                   }}
-                  placeholder="Paste your resume text here..."
-                  className="w-full h-56 p-4 border rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black bg-white"
+                  placeholder="Paste all text from your resume here..."
+                  className="input-glass h-[200px] resize-y"
                 />
               </div>
             </div>
 
-            <button
-              onClick={handleGenerate}
-              disabled={!canGenerate}
-              className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              Generate Portfolio
-            </button>
+            <div className="max-w-2xl mx-auto mt-6 pt-6 border-t border-slate-700/50">
+              <button
+                onClick={handleGenerate}
+                disabled={!canGenerate}
+                className="btn-primary py-4 text-lg"
+              >
+                Generate Website
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* If generation is entirely finished and 'files' exist, show the result screen with the code blocks */}
       {files && (
-        <div className="max-w-5xl mx-auto">
-          <div className="bg-white rounded-xl shadow-lg p-8 mb-6 text-black">
-            <div className="flex items-start justify-between gap-6">
-              <div>
-                <h1 className="text-3xl font-bold">Your website files are ready</h1>
-                <p className="text-gray-700 mt-2">
-                  You can copy/paste the code or use the Download buttons to save the
-                  files directly.
-                </p>
-                <p className="text-gray-700 mt-3">
-                  Then open <span className="font-mono">index.html</span> in your browser.
-                </p>
-              </div>
-
-              <button
-                onClick={() => {
-                  setFiles(null);
-                  setLoading(false);
-                }}
-                className="border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition text-black"
-              >
-                Back
-              </button>
+        <div className="w-full max-w-5xl mx-auto relative z-10 animate-fade-in flex flex-col gap-6 px-4">
+          <div className="glass-card p-8 text-center md:text-left flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2 tracking-wide">Website Ready</h1>
+              <p className="text-subtext">
+                Copy the code below or save the raw files.
+              </p>
             </div>
+
+            <button
+              onClick={() => {
+                setFiles(null);
+                setLoading(false);
+              }}
+              className="btn-secondary px-6 py-3 w-full md:w-auto text-lg"
+            >
+              Start Over
+            </button>
           </div>
 
           <CodeBlock
-            title="HTML"
+            title="HTML Document"
             value={files.html}
             filename="index.html"
             mimeType="text/html;charset=utf-8"
           />
 
           <CodeBlock
-            title="CSS"
+            title="CSS Stylesheet"
             value={files.css}
             filename="styles.css"
             mimeType="text/css;charset=utf-8"

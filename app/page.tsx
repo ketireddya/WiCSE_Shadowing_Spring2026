@@ -321,6 +321,29 @@ export default function Home() {
       description: "",
     }))
   );
+  
+  // States for frontend validation and loading
+  const [pdfError, setPdfError] = useState("");
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [pdfSuccess, setPdfSuccess] = useState(false);
+
+  // Control for number of works
+  const numWorks = pdfEntries.length;
+  const updateNumWorks = (newNum: number) => {
+    if (newNum < 1 || newNum > 20) return;
+    if (newNum > numWorks) {
+      // Add more placeholder entries to the end
+      const adds = Array.from({ length: newNum - numWorks }, () => ({
+        image: null as File | null,
+        title: "",
+        description: "",
+      }));
+      setPdfEntries([...pdfEntries, ...adds]);
+    } else {
+      // Remove trailing entries from the end
+      setPdfEntries(pdfEntries.slice(0, newNum));
+    }
+  };
 
   // useMemo remembers ('memoizes') this true/false calculation so we don't recalculate it unnecessarily.
   // It returns 'true' if we either have a file uploaded OR if there's some text pasted. 
@@ -378,6 +401,32 @@ export default function Home() {
     }
   };
 
+  // The frontend function that runs when the user clicks the "Generate Portfolio" button for the PDF track.
+  const handleGeneratePdf = () => {
+    // 1) Validate: check if every entry has a valid image, title, and description
+    const isValid = pdfEntries.every(
+      (entry) => entry.image && entry.title.trim() !== "" && entry.description.trim() !== ""
+    );
+
+    if (!isValid) {
+      setPdfError(
+        "Please complete every portfolio entry before generating your PDF. Each work must include an image, a title, and a description."
+      );
+      return; // Stop here if validation fails
+    }
+    
+    // Clear any previous error and show our loading state
+    setPdfError("");
+    setPdfLoading(true);
+
+    // 2) Fake delay placeholder
+    // Currently, we don't have a backend to call. We'll show a loading screen for 2.5 seconds.
+    setTimeout(() => {
+      setPdfLoading(false);
+      setPdfSuccess(true);
+    }, 2500);
+  };
+
   // Helper to update a single entry in the pdfEntries array
   const updatePdfEntry = (index: number, field: "image" | "title" | "description", value: any) => {
     const newEntries = [...pdfEntries];
@@ -421,6 +470,50 @@ export default function Home() {
 
   // 2. CREATIVE PDF ROUTE
   if (appRoute === "pdf") {
+    // Temporary Loading Screen: shown during the fake 2.5s delay
+    if (pdfLoading && !pdfSuccess) {
+      return (
+        <main className="min-h-screen bg-gray-100 p-6 flex items-center justify-center">
+          <div className="bg-white shadow-lg rounded-xl p-10 w-full max-w-xl text-center">
+            <div className="flex justify-center mb-6">
+              <div className="w-16 h-16 border-4 border-black rounded-md animate-pulse" />
+            </div>
+            <h2 className="text-2xl font-semibold text-black mb-2">
+              Generating your PDF
+            </h2>
+            <p className="text-gray-600">
+              Laying out pages, inserting images, and preparing your creative portfolio.
+            </p>
+          </div>
+        </main>
+      );
+    }
+    
+    // Placeholder Success Screen: shown after the loading is complete
+    if (!pdfLoading && pdfSuccess) {
+      return (
+        <main className="min-h-screen bg-gray-100 p-6 flex flex-col items-center justify-center">
+          <div className="bg-white shadow-lg rounded-xl p-10 w-full max-w-2xl text-center">
+            <h1 className="text-4xl font-bold mb-4 text-blue-900">
+              Your portfolio is ready!
+            </h1>
+            <p className="text-gray-600 mb-8 max-w-xl mx-auto text-lg">
+              This is a placeholder success screen. Full PDF generation will be implemented in the next step.
+            </p>
+            
+            <button
+              onClick={() => {
+                setPdfSuccess(false); // Reset to go back to editing
+              }}
+              className="mt-4 text-gray-500 hover:text-black underline transition font-medium"
+            >
+              Go Back and Edit
+            </button>
+          </div>
+        </main>
+      );
+    }
+
     return (
       <main className="min-h-screen bg-gray-100 p-6 flex flex-col items-center py-10">
         <div className="w-full max-w-4xl mb-6">
@@ -434,11 +527,32 @@ export default function Home() {
 
         <div className="bg-white shadow-lg rounded-xl p-10 w-full max-w-4xl">
           <h1 className="text-4xl font-bold mb-4 text-center text-blue-900">
-            AI One-Page Website Generator
+            Creative PDF Portfolio
           </h1>
           <p className="text-gray-600 mb-8 text-center max-w-2xl mx-auto">
-            Provide exactly 5 portfolio entries to build your creative PDF portfolio. For each entry, upload an image and add a title and description.
+            Provide portfolio entries to build your creative PDF portfolio. For each entry, upload an image and add a title and description.
           </p>
+
+          <div className="flex flex-col sm:flex-row justify-between items-center bg-gray-50 p-6 rounded-xl mb-8 border border-gray-200">
+            <span className="font-semibold text-blue-900 text-lg">Number of works:</span>
+            <div className="flex items-center gap-4 mt-4 sm:mt-0">
+              <button 
+                onClick={() => updateNumWorks(numWorks - 1)}
+                disabled={numWorks <= 1}
+                className="w-12 h-12 rounded-full bg-white border border-gray-300 text-2xl font-bold hover:bg-gray-100 disabled:opacity-50 transition"
+              >
+                -
+              </button>
+              <span className="font-bold text-xl w-8 text-center">{numWorks}</span>
+              <button 
+                onClick={() => updateNumWorks(numWorks + 1)}
+                disabled={numWorks >= 20}
+                className="w-12 h-12 rounded-full bg-white border border-gray-300 text-2xl font-bold hover:bg-gray-100 disabled:opacity-50 transition"
+              >
+                +
+              </button>
+            </div>
+          </div>
 
           <div className="space-y-8">
             {pdfEntries.map((entry, index) => (
@@ -489,7 +603,7 @@ export default function Home() {
                       value={entry.description}
                       onChange={(e) => updatePdfEntry(index, "description", e.target.value)}
                       placeholder="Describe the project, your role, and the outcomes..."
-                      className="w-full flex-1 p-3 border rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black bg-white min-h-[120px]"
+                      className="w-full flex-1 p-3 border rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black bg-white min-h-[120px] resize-y"
                     />
                   </div>
                 </div>
@@ -498,12 +612,18 @@ export default function Home() {
             ))}
           </div>
           
-          {/* A disabled button since generation backend is not yet implemented */}
+          {/* Validation Error Banner */}
+          {pdfError && (
+             <div className="mt-8 p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg text-center font-medium">
+               {pdfError}
+             </div>
+          )}
+          
           <button
-            disabled
-            className="w-full mt-8 bg-black text-white py-3 rounded-lg opacity-50 cursor-not-allowed"
+            onClick={handleGeneratePdf}
+            className="w-full mt-8 bg-black text-white py-4 rounded-xl hover:bg-gray-800 transition shadow font-bold text-lg"
           >
-            Generate PDF (Coming Soon)
+            Generate Portfolio
           </button>
         </div>
       </main>
@@ -521,8 +641,8 @@ export default function Home() {
       {!loading && !files && (
         <div className="min-h-screen flex flex-col items-center justify-center">
           <div className="w-full max-w-3xl mb-6">
-            <button 
-              onClick={() => setAppRoute("selector")} 
+            <button
+              onClick={() => setAppRoute("selector")}
               className="text-gray-600 hover:text-black transition flex items-center gap-2 font-medium"
             >
               &larr; Back to selection
@@ -548,8 +668,8 @@ export default function Home() {
                     setResumeText("");
                   }}
                   className={`px-5 py-2.5 rounded-full transition font-medium ${inputMode === "upload"
-                      ? "bg-black text-white"
-                      : "bg-transparent text-gray-700 hover:bg-white"
+                    ? "bg-black text-white"
+                    : "bg-transparent text-gray-700 hover:bg-white"
                     }`}
                 >
                   Upload your resume
@@ -561,8 +681,8 @@ export default function Home() {
                     setResumeFile(null);
                   }}
                   className={`px-5 py-2.5 rounded-full transition font-medium ${inputMode === "paste"
-                      ? "bg-black text-white"
-                      : "bg-transparent text-gray-700 hover:bg-white"
+                    ? "bg-black text-white"
+                    : "bg-transparent text-gray-700 hover:bg-white"
                     }`}
                 >
                   Copy / Paste
@@ -572,8 +692,8 @@ export default function Home() {
 
             <div
               className={`transition-all duration-500 ease-out overflow-hidden ${inputMode === "upload"
-                  ? "opacity-100 translate-y-0 max-h-72 mb-6"
-                  : "opacity-0 -translate-y-1 max-h-0 mb-0 pointer-events-none"
+                ? "opacity-100 translate-y-0 max-h-72 mb-6"
+                : "opacity-0 -translate-y-1 max-h-0 mb-0 pointer-events-none"
                 }`}
             >
               <div className="border border-gray-200 rounded-xl p-6 bg-gray-50">
@@ -602,8 +722,8 @@ export default function Home() {
 
             <div
               className={`transition-all duration-500 ease-out overflow-hidden ${inputMode === "paste"
-                  ? "opacity-100 translate-y-0 max-h-[28rem] mb-6"
-                  : "opacity-0 -translate-y-1 max-h-0 mb-0 pointer-events-none"
+                ? "opacity-100 translate-y-0 max-h-[28rem] mb-6"
+                : "opacity-0 -translate-y-1 max-h-0 mb-0 pointer-events-none"
                 }`}
             >
               <div className="border border-gray-200 rounded-xl p-6 bg-gray-50">

@@ -296,12 +296,31 @@ footer {
 
 // This is the main "Home" page component. It contains all the logic for our website generator interface.
 export default function Home() {
+  // --- Route State ---
+  // The new top-level state for route selection
+  // 'selector': Initial screen asking the user which route to take
+  // 'website': The original resume-to-website generator flow
+  // 'pdf': The new creative PDF portfolio flow
+  const [appRoute, setAppRoute] = useState<"selector" | "website" | "pdf">("selector");
+
+  // --- Website Generator State ---
   // useState stores variables that, when changed, tell the page to update what's shown on screen.
   const [resumeText, setResumeText] = useState(""); // Stores whatever text the user pasted in the text box.
   const [resumeFile, setResumeFile] = useState<File | null>(null); // Stores the PDF file if the user chose to upload one.
   const [files, setFiles] = useState<WebsiteFiles | null>(null); // Stores the fully generated HTML and CSS code, if generation is complete.
   const [loading, setLoading] = useState(false); // A simple true/false state to know if we are currently waiting for the AI.
   const [inputMode, setInputMode] = useState<InputMode>(null); // Tracks whether they clicked "Upload" or "Paste".
+
+  // --- Creative PDF Generator State ---
+  // Array of 5 default empty entries to store inputs for the creative PDF portfolio.
+  // Each entry has an image file, a title, and a description.
+  const [pdfEntries, setPdfEntries] = useState(
+    Array.from({ length: 5 }, () => ({
+      image: null as File | null,
+      title: "",
+      description: "",
+    }))
+  );
 
   // useMemo remembers ('memoizes') this true/false calculation so we don't recalculate it unnecessarily.
   // It returns 'true' if we either have a file uploaded OR if there's some text pasted. 
@@ -310,7 +329,7 @@ export default function Home() {
     return Boolean(resumeFile) || resumeText.trim().length > 0;
   }, [resumeFile, resumeText]);
 
-  // The function that runs when the user clicks the "Generate Portfolio" button.
+  // The function that runs when the user clicks the "Generate Portfolio" button for the website track.
   const handleGenerate = async () => {
     try {
       if (!canGenerate) {
@@ -359,6 +378,140 @@ export default function Home() {
     }
   };
 
+  // Helper to update a single entry in the pdfEntries array
+  const updatePdfEntry = (index: number, field: "image" | "title" | "description", value: any) => {
+    const newEntries = [...pdfEntries];
+    newEntries[index] = { ...newEntries[index], [field]: value };
+    setPdfEntries(newEntries);
+  };
+
+  // 1. SELECTOR ROUTE
+  if (appRoute === "selector") {
+    return (
+      <main className="min-h-screen bg-gray-100 p-6 flex flex-col items-center justify-center">
+        <div className="bg-white shadow-lg rounded-xl p-10 w-full max-w-3xl">
+          <h1 className="text-4xl font-bold mb-4 text-center text-blue-900">
+            Portfolio Generator
+          </h1>
+          <p className="text-gray-600 mb-8 text-center max-w-2xl mx-auto">
+            Which type of portfolio do you want to create?
+          </p>
+
+          <div className="flex justify-center mb-8">
+            <div className="inline-flex items-center gap-2 rounded-full bg-gray-100 p-2 border border-gray-200">
+              <button
+                onClick={() => setAppRoute("website")}
+                className="px-5 py-2.5 rounded-full transition font-medium bg-transparent text-gray-700 hover:bg-white"
+              >
+                One-Page Portfolio Website
+              </button>
+
+              <button
+                onClick={() => setAppRoute("pdf")}
+                className="px-5 py-2.5 rounded-full transition font-medium bg-transparent text-gray-700 hover:bg-white"
+              >
+                Creative PDF Portfolio
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // 2. CREATIVE PDF ROUTE
+  if (appRoute === "pdf") {
+    return (
+      <main className="min-h-screen bg-gray-100 p-6 flex flex-col items-center py-10">
+        <div className="w-full max-w-4xl mb-6">
+          <button 
+            onClick={() => setAppRoute("selector")} 
+            className="text-gray-600 hover:text-black transition flex items-center gap-2 font-medium"
+          >
+            &larr; Back to selection
+          </button>
+        </div>
+
+        <div className="bg-white shadow-lg rounded-xl p-10 w-full max-w-4xl">
+          <h1 className="text-4xl font-bold mb-4 text-center text-blue-900">
+            AI One-Page Website Generator
+          </h1>
+          <p className="text-gray-600 mb-8 text-center max-w-2xl mx-auto">
+            Provide exactly 5 portfolio entries to build your creative PDF portfolio. For each entry, upload an image and add a title and description.
+          </p>
+
+          <div className="space-y-8">
+            {pdfEntries.map((entry, index) => (
+              <div key={index} className="border border-gray-200 rounded-xl p-6 bg-gray-50 flex flex-col md:flex-row gap-6">
+                
+                {/* Left side: Image Upload */}
+                <div className="flex-1">
+                  <h3 className="font-semibold text-blue-900 mb-3">
+                    Work {index + 1} Image
+                  </h3>
+                  <div className="border border-gray-300 rounded-lg p-6 bg-white text-center h-full min-h-[220px] flex flex-col items-center justify-center">
+                    <input 
+                      type="file" 
+                      accept=".jpeg, .jpg, .png"
+                      onChange={(e) => {
+                         const file = e.target.files?.[0] || null;
+                         updatePdfEntry(index, "image", file);
+                      }}
+                      className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-gray-100 file:text-gray-800 hover:file:bg-gray-200"
+                    />
+                    {entry.image && (
+                      <p className="mt-4 text-sm text-gray-600 truncate max-w-full">
+                        Selected: <span className="font-medium">{entry.image.name}</span>
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right side: Title & Description */}
+                <div className="flex-1 flex flex-col">
+                  <div className="mb-4">
+                    <label className="block font-semibold text-blue-900 mb-2">
+                       Work {index + 1} Title
+                    </label>
+                    <input 
+                      type="text" 
+                      value={entry.title}
+                      onChange={(e) => updatePdfEntry(index, "title", e.target.value)}
+                      placeholder="e.g. Modern E-commerce Redesign"
+                      className="w-full p-3 border rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black bg-white"
+                    />
+                  </div>
+                  <div className="flex-1 flex flex-col">
+                    <label className="block font-semibold text-blue-900 mb-2">
+                       Work {index + 1} Description
+                    </label>
+                    <textarea 
+                      value={entry.description}
+                      onChange={(e) => updatePdfEntry(index, "description", e.target.value)}
+                      placeholder="Describe the project, your role, and the outcomes..."
+                      className="w-full flex-1 p-3 border rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black bg-white min-h-[120px]"
+                    />
+                  </div>
+                </div>
+                
+              </div>
+            ))}
+          </div>
+          
+          {/* A disabled button since generation backend is not yet implemented */}
+          <button
+            disabled
+            className="w-full mt-8 bg-black text-white py-3 rounded-lg opacity-50 cursor-not-allowed"
+          >
+            Generate PDF (Coming Soon)
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  // 3. ONE-PAGE WEBSITE ROUTE
+  // Uses the original code
   return (
     <main className="min-h-screen bg-gray-100 p-6">
       {/* If 'loading' is true and we don't have 'files' yet, show the LoadingScreen component */}
@@ -366,7 +519,16 @@ export default function Home() {
 
       {/* If we aren't loading and don't have files yet, show the initial input form */}
       {!loading && !files && (
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="min-h-screen flex flex-col items-center justify-center">
+          <div className="w-full max-w-3xl mb-6">
+            <button 
+              onClick={() => setAppRoute("selector")} 
+              className="text-gray-600 hover:text-black transition flex items-center gap-2 font-medium"
+            >
+              &larr; Back to selection
+            </button>
+          </div>
+
           <div className="bg-white shadow-lg rounded-xl p-10 w-full max-w-3xl">
             <h1 className="text-4xl font-bold mb-4 text-center text-blue-900">
               AI One-Page Website Generator

@@ -321,11 +321,12 @@ export default function Home() {
       description: "",
     }))
   );
-  
+
   // States for frontend validation and loading
   const [pdfError, setPdfError] = useState("");
   const [pdfLoading, setPdfLoading] = useState(false);
-  const [pdfSuccess, setPdfSuccess] = useState(false);
+  // Store the successfully generated file from our backend here
+  const [pdfResult, setPdfResult] = useState<Blob | null>(null);
 
   // Control for number of works
   const numWorks = pdfEntries.length;
@@ -402,7 +403,7 @@ export default function Home() {
   };
 
   // The frontend function that runs when the user clicks the "Generate Portfolio" button for the PDF track.
-  const handleGeneratePdf = () => {
+  const handleGeneratePdf = async () => {
     // 1) Validate: check if every entry has a valid image, title, and description
     const isValid = pdfEntries.every(
       (entry) => entry.image && entry.title.trim() !== "" && entry.description.trim() !== ""
@@ -414,17 +415,63 @@ export default function Home() {
       );
       return; // Stop here if validation fails
     }
-    
+
     // Clear any previous error and show our loading state
     setPdfError("");
     setPdfLoading(true);
 
-    // 2) Fake delay placeholder
-    // Currently, we don't have a backend to call. We'll show a loading screen for 2.5 seconds.
-    setTimeout(() => {
+    try {
+      // 2) Build FormData structure to send specifically to our creative PDF backend
+      const formData = new FormData();
+      
+      // We pass along the count of dynamically selected entries so the backend knows how many to loop through
+      formData.append("numEntries", pdfEntries.length.toString());
+      
+      // Loop across each submitted work and attach it natively to the multipart request
+      pdfEntries.forEach((entry, i) => {
+        // We know image exists because our frontend validation above caught it if it didn't!
+        formData.append(`image_${i}`, entry.image!);
+        formData.append(`title_${i}`, entry.title);
+        formData.append(`description_${i}`, entry.description);
+      });
+
+      // 3) Send POST payload to our generated PDF API route securely without interrupting page flow
+      const response = await fetch("/api/generate-pdf", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate PDF from server");
+      }
+
+      // 4) Convert the incoming API response directly into a standard Javascript Blob file
+      const blob = await response.blob();
+      setPdfResult(blob); // Render matching success screens mapped against existence of this Blob
+    } catch (error) {
+      console.error(error);
+      setPdfError("An error occurred while generating the PDF. Please try again.");
+    } finally {
+      // Turn off the loading state regardless of if we succeed or error out safely
       setPdfLoading(false);
-      setPdfSuccess(true);
-    }, 2500);
+    }
+  };
+
+  // Helper action for downloading the generated PDF blob directly to the user's computer securely over DOM links
+  const handleDownloadPdf = () => {
+    if (!pdfResult) return;
+    
+    // We instantiate a URL tracking the isolated Blob within memory securely
+    const url = URL.createObjectURL(pdfResult);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "creative-portfolio.pdf"; // This decides the name users save it natively as
+    
+    // Trigger phantom click, securely executing across standard browser restrictions cleanly
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url); // Clean up the URL object immediately after to free memory overhead smoothly
   };
 
   // Helper to update a single entry in the pdfEntries array
@@ -470,8 +517,8 @@ export default function Home() {
 
   // 2. CREATIVE PDF ROUTE
   if (appRoute === "pdf") {
-    // Temporary Loading Screen: shown during the fake 2.5s delay
-    if (pdfLoading && !pdfSuccess) {
+    // Temporary Loading Screen: shown during API call
+    if (pdfLoading && !pdfResult) {
       return (
         <main className="min-h-screen bg-gray-100 p-6 flex items-center justify-center">
           <div className="bg-white shadow-lg rounded-xl p-10 w-full max-w-xl text-center">
@@ -488,9 +535,9 @@ export default function Home() {
         </main>
       );
     }
-    
-    // Placeholder Success Screen: shown after the loading is complete
-    if (!pdfLoading && pdfSuccess) {
+
+    // Success Screen: shown after the loading is complete securely processing API Blobs into DOM clicks natively
+    if (!pdfLoading && pdfResult) {
       return (
         <main className="min-h-screen bg-gray-100 p-6 flex flex-col items-center justify-center">
           <div className="bg-white shadow-lg rounded-xl p-10 w-full max-w-2xl text-center">
@@ -498,12 +545,19 @@ export default function Home() {
               Your portfolio is ready!
             </h1>
             <p className="text-gray-600 mb-8 max-w-xl mx-auto text-lg">
-              This is a placeholder success screen. Full PDF generation will be implemented in the next step.
+              Your creative PDF portfolio has been successfully generated. Click the button below to download it to your device.
             </p>
-            
+
+            <button
+              onClick={handleDownloadPdf}
+              className="w-full bg-black text-white py-4 rounded-xl hover:bg-gray-800 transition shadow-lg font-bold text-lg mb-6"
+            >
+              Download PDF
+            </button>
+
             <button
               onClick={() => {
-                setPdfSuccess(false); // Reset to go back to editing
+                setPdfResult(null); // Reset to go back to editing seamlessly
               }}
               className="mt-4 text-gray-500 hover:text-black underline transition font-medium"
             >
@@ -517,8 +571,8 @@ export default function Home() {
     return (
       <main className="min-h-screen bg-gray-100 p-6 flex flex-col items-center py-10">
         <div className="w-full max-w-4xl mb-6">
-          <button 
-            onClick={() => setAppRoute("selector")} 
+          <button
+            onClick={() => setAppRoute("selector")}
             className="text-gray-600 hover:text-black transition flex items-center gap-2 font-medium"
           >
             &larr; Back to selection
@@ -536,7 +590,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row justify-between items-center bg-gray-50 p-6 rounded-xl mb-8 border border-gray-200">
             <span className="font-semibold text-blue-900 text-lg">Number of works:</span>
             <div className="flex items-center gap-4 mt-4 sm:mt-0">
-              <button 
+              <button
                 onClick={() => updateNumWorks(numWorks - 1)}
                 disabled={numWorks <= 1}
                 className="w-12 h-12 rounded-full bg-white border border-gray-300 text-2xl font-bold hover:bg-gray-100 disabled:opacity-50 transition"
@@ -544,7 +598,7 @@ export default function Home() {
                 -
               </button>
               <span className="font-bold text-xl w-8 text-center">{numWorks}</span>
-              <button 
+              <button
                 onClick={() => updateNumWorks(numWorks + 1)}
                 disabled={numWorks >= 20}
                 className="w-12 h-12 rounded-full bg-white border border-gray-300 text-2xl font-bold hover:bg-gray-100 disabled:opacity-50 transition"
@@ -557,19 +611,19 @@ export default function Home() {
           <div className="space-y-8">
             {pdfEntries.map((entry, index) => (
               <div key={index} className="border border-gray-200 rounded-xl p-6 bg-gray-50 flex flex-col md:flex-row gap-6">
-                
+
                 {/* Left side: Image Upload */}
                 <div className="flex-1">
                   <h3 className="font-semibold text-blue-900 mb-3">
                     Work {index + 1} Image
                   </h3>
                   <div className="border border-gray-300 rounded-lg p-6 bg-white text-center h-full min-h-[220px] flex flex-col items-center justify-center">
-                    <input 
-                      type="file" 
+                    <input
+                      type="file"
                       accept=".jpeg, .jpg, .png"
                       onChange={(e) => {
-                         const file = e.target.files?.[0] || null;
-                         updatePdfEntry(index, "image", file);
+                        const file = e.target.files?.[0] || null;
+                        updatePdfEntry(index, "image", file);
                       }}
                       className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-gray-100 file:text-gray-800 hover:file:bg-gray-200"
                     />
@@ -585,10 +639,10 @@ export default function Home() {
                 <div className="flex-1 flex flex-col">
                   <div className="mb-4">
                     <label className="block font-semibold text-blue-900 mb-2">
-                       Work {index + 1} Title
+                      Work {index + 1} Title
                     </label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={entry.title}
                       onChange={(e) => updatePdfEntry(index, "title", e.target.value)}
                       placeholder="e.g. Modern E-commerce Redesign"
@@ -597,9 +651,9 @@ export default function Home() {
                   </div>
                   <div className="flex-1 flex flex-col">
                     <label className="block font-semibold text-blue-900 mb-2">
-                       Work {index + 1} Description
+                      Work {index + 1} Description
                     </label>
-                    <textarea 
+                    <textarea
                       value={entry.description}
                       onChange={(e) => updatePdfEntry(index, "description", e.target.value)}
                       placeholder="Describe the project, your role, and the outcomes..."
@@ -607,18 +661,18 @@ export default function Home() {
                     />
                   </div>
                 </div>
-                
+
               </div>
             ))}
           </div>
-          
+
           {/* Validation Error Banner */}
           {pdfError && (
-             <div className="mt-8 p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg text-center font-medium">
-               {pdfError}
-             </div>
+            <div className="mt-8 p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg text-center font-medium">
+              {pdfError}
+            </div>
           )}
-          
+
           <button
             onClick={handleGeneratePdf}
             className="w-full mt-8 bg-black text-white py-4 rounded-xl hover:bg-gray-800 transition shadow font-bold text-lg"

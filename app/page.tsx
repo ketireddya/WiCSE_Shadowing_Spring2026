@@ -96,9 +96,9 @@ function LoadingScreen() {
     <div className="bg-cinematic flex items-center justify-center absolute inset-0 z-50">
       <div className="glass-card p-12 text-center max-w-md w-full animate-fade-in flex flex-col items-center">
         <div className="relative w-20 h-20 mb-8">
-           <div className="absolute inset-0 border-4 border-blue-500/20 rounded-2xl rotate-3" />
-           <div className="absolute inset-0 border-4 border-blue-400 rounded-2xl animate-pulse" />
-           <div className="absolute inset-0 bg-blue-500/20 blur-xl animate-pulse" />
+          <div className="absolute inset-0 border-4 border-blue-500/20 rounded-2xl rotate-3" />
+          <div className="absolute inset-0 border-4 border-blue-400 rounded-2xl animate-pulse" />
+          <div className="absolute inset-0 bg-blue-500/20 blur-xl animate-pulse" />
         </div>
 
         <h2 className="text-2xl font-semibold text-white mb-3">
@@ -329,6 +329,8 @@ export default function Home() {
   // Store the successfully generated file from our backend here
   const [pdfResult, setPdfResult] = useState<Blob | null>(null);
 
+  const [selectedLayout, setSelectedLayout] = useState<"layout1" | "layout2" | "layout3">("layout1");
+
   // Control for number of works
   const numWorks = pdfEntries.length;
   const updateNumWorks = (newNum: number) => {
@@ -344,6 +346,14 @@ export default function Home() {
     } else {
       // Remove trailing entries from the end
       setPdfEntries(pdfEntries.slice(0, newNum));
+    }
+  };
+
+  const handleLayoutChange = (layout: "layout1" | "layout2" | "layout3") => {
+    setSelectedLayout(layout);
+    setPdfError("");
+    if (layout === "layout3") {
+      updateNumWorks(8);
     }
   };
 
@@ -406,13 +416,17 @@ export default function Home() {
   // The frontend function that runs when the user clicks the "Generate Portfolio" button for the PDF track.
   const handleGeneratePdf = async () => {
     // 1) Validate: check if every entry has a valid image, title, and description
-    const isValid = pdfEntries.every(
-      (entry) => entry.image && entry.title.trim() !== "" && entry.description.trim() !== ""
-    );
+    const isValid = pdfEntries.every((entry) => {
+      if (!entry.image || entry.title.trim() === "") return false;
+      if (selectedLayout !== "layout2" && entry.description.trim() === "") return false;
+      return true;
+    });
 
     if (!isValid) {
       setPdfError(
-        "Please complete every portfolio entry before generating your PDF. Each work must include an image, a title, and a description."
+        selectedLayout === "layout2"
+          ? "Please ensure every portfolio entry has an image and a title."
+          : "Please check your entries. Make sure required images, titles, and descriptions are filled out before generating."
       );
       return; // Stop here if validation fails
     }
@@ -424,10 +438,13 @@ export default function Home() {
     try {
       // 2) Build FormData structure to send specifically to our creative PDF backend
       const formData = new FormData();
-      
+
       // We pass along the count of dynamically selected entries so the backend knows how many to loop through
       formData.append("numEntries", pdfEntries.length.toString());
-      
+      formData.append("layout", selectedLayout);
+
+      console.log("Generating PDF with layout:", selectedLayout);
+
       // Loop across each submitted work and attach it natively to the multipart request
       pdfEntries.forEach((entry, i) => {
         // We know image exists because our frontend validation above caught it if it didn't!
@@ -461,13 +478,13 @@ export default function Home() {
   // Helper action for downloading the generated PDF blob directly to the user's computer securely over DOM links
   const handleDownloadPdf = () => {
     if (!pdfResult) return;
-    
+
     // We instantiate a URL tracking the isolated Blob within memory securely
     const url = URL.createObjectURL(pdfResult);
     const a = document.createElement("a");
     a.href = url;
     a.download = "creative-portfolio.pdf"; // This decides the name users save it natively as
-    
+
     // Trigger phantom click, securely executing across standard browser restrictions cleanly
     document.body.appendChild(a);
     a.click();
@@ -487,7 +504,7 @@ export default function Home() {
     return (
       <main className="bg-cinematic flex items-center justify-center">
         <div className="w-full max-w-[1200px] grid md:grid-cols-2 gap-12 lg:gap-20 items-center animate-fade-in py-10">
-          
+
           {/* Left Side: Dramatic Typography Header */}
           <div className="text-center md:text-left">
             <h1 className="text-6xl lg:text-7xl font-bold tracking-[0.2em] uppercase leading-[1.1] mb-6 text-white drop-shadow-lg">
@@ -532,7 +549,7 @@ export default function Home() {
               </div>
             </button>
           </div>
-          
+
         </div>
       </main>
     );
@@ -546,13 +563,13 @@ export default function Home() {
         <main className="bg-cinematic flex items-center justify-center absolute inset-0 z-50">
           <div className="glass-card p-12 text-center max-w-md w-full animate-fade-in flex flex-col items-center">
             <div className="relative w-24 h-24 mb-8">
-               <div className="absolute inset-0 border-4 border-indigo-500/20 rounded-2xl rotate-3" />
-               <div className="absolute inset-0 border-4 border-indigo-400 rounded-2xl animate-pulse" />
-               <div className="absolute inset-0 bg-indigo-500/20 blur-xl animate-pulse" />
-               {/* inner icon stub */}
-               <div className="absolute inset-0 flex items-center justify-center">
-                 <svg className="w-8 h-8 text-indigo-300 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-               </div>
+              <div className="absolute inset-0 border-4 border-indigo-500/20 rounded-2xl rotate-3" />
+              <div className="absolute inset-0 border-4 border-indigo-400 rounded-2xl animate-pulse" />
+              <div className="absolute inset-0 bg-indigo-500/20 blur-xl animate-pulse" />
+              {/* inner icon stub */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <svg className="w-8 h-8 text-indigo-300 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+              </div>
             </div>
             <h2 className="text-2xl font-semibold text-white mb-3">
               Generating your PDF
@@ -573,13 +590,10 @@ export default function Home() {
             <div className="w-20 h-20 bg-green-500/10 border border-green-500/30 rounded-2xl flex items-center justify-center mb-8">
               <svg className="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
             </div>
-          
-            <h1 className="text-3xl font-bold mb-3 text-white">
+
+            <h1 className="text-3xl font-bold mb-10 text-white">
               Your portfolio is ready!
             </h1>
-            <p className="text-subtext mb-10 leading-relaxed">
-              Your stunning creative PDF mapped cleanly over our design tokens has been successfully generated.
-            </p>
 
             <button
               onClick={handleDownloadPdf}
@@ -621,96 +635,164 @@ export default function Home() {
             Provide portfolio entries to build your creative PDF portfolio. For each entry, upload an image and add a title and description.
           </p>
 
-          <div className="flex flex-col sm:flex-row justify-between items-center bg-slate-900/40 p-6 rounded-2xl mb-10 border border-slate-700/50 shadow-inner">
-            <span className="font-semibold text-white text-lg">Number of portfolio works:</span>
-            <div className="flex items-center gap-6 mt-4 sm:mt-0 bg-slate-800/80 rounded-full p-2 border border-slate-700/50">
+          <div className="mb-10">
+            <h2 className="text-xl font-bold text-white mb-4">Choose your layout</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <button
-                onClick={() => updateNumWorks(numWorks - 1)}
-                disabled={numWorks <= 1}
-                className="w-10 h-10 rounded-full bg-slate-700/50 text-white flex items-center justify-center hover:bg-slate-600 disabled:opacity-30 transition cursor-pointer"
+                onClick={() => handleLayoutChange("layout1")}
+                className={`p-5 rounded-2xl border text-left transition-all ${selectedLayout === "layout1" ? "bg-blue-600/20 border-blue-500 shadow-[0_0_15px_rgba(37,99,235,0.2)]" : "bg-slate-900/40 border-slate-700/50 hover:bg-slate-800"}`}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" /></svg>
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className="text-lg font-semibold text-white">Layout 1 (Default)</h3>
+                  {selectedLayout === "layout1" && <span className="text-blue-400 text-sm font-medium">Selected</span>}
+                </div>
+                <p className="text-sm text-subtext leading-relaxed mt-2">Image + title + description. One project per page.</p>
               </button>
-              <span className="font-bold text-xl w-6 text-center text-white">{numWorks}</span>
+
               <button
-                onClick={() => updateNumWorks(numWorks + 1)}
-                disabled={numWorks >= 20}
-                className="w-10 h-10 rounded-full bg-blue-600/80 text-white flex items-center justify-center hover:bg-blue-500 disabled:opacity-30 transition shadow-lg cursor-pointer"
+                onClick={() => handleLayoutChange("layout2")}
+                className={`p-5 rounded-2xl border text-left transition-all ${selectedLayout === "layout2" ? "bg-blue-600/20 border-blue-500 shadow-[0_0_15px_rgba(37,99,235,0.2)]" : "bg-slate-900/40 border-slate-700/50 hover:bg-slate-800"}`}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className="text-lg font-semibold text-white">Layout 2</h3>
+                  {selectedLayout === "layout2" && <span className="text-blue-400 text-sm font-medium">Selected</span>}
+                </div>
+                <p className="text-sm text-subtext leading-relaxed mt-2">Image-focused gallery. Titles only, no descriptions.</p>
+              </button>
+
+              <button
+                onClick={() => handleLayoutChange("layout3")}
+                className={`p-5 rounded-2xl border text-left transition-all ${selectedLayout === "layout3" ? "bg-blue-600/20 border-blue-500 shadow-[0_0_15px_rgba(37,99,235,0.2)]" : "bg-slate-900/40 border-slate-700/50 hover:bg-slate-800"}`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className="text-lg font-semibold text-white">Layout 3</h3>
+                  {selectedLayout === "layout3" && <span className="text-blue-400 text-sm font-medium">Selected</span>}
+                </div>
+                <p className="text-sm text-subtext leading-relaxed mt-2">Editorial layout with fixed structure and page count.</p>
               </button>
             </div>
+
+            {selectedLayout === "layout3" && (
+              <div className="mt-4 p-4 bg-indigo-900/20 border border-indigo-500/30 rounded-xl animate-fade-in">
+                <p className="text-indigo-200 text-sm font-medium flex items-center gap-2">
+                  <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  This layout uses a fixed number of pages and cannot be customized.
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-col sm:flex-row justify-between items-center bg-slate-900/40 p-6 rounded-2xl mb-10 border border-slate-700/50 shadow-inner">
+            <span className="font-semibold text-white text-lg">Number of portfolio works:</span>
+            {selectedLayout === "layout3" ? (
+              <span className="text-indigo-300 font-medium bg-slate-800/80 px-5 py-2.5 rounded-lg border border-indigo-500/20 mt-4 sm:mt-0 shadow-sm inline-flex items-center gap-2">
+                <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                Number of works is fixed for this layout.
+              </span>
+            ) : (
+              <div className="flex items-center gap-6 mt-4 sm:mt-0 bg-slate-800/80 rounded-full p-2 border border-slate-700/50">
+                <button
+                  onClick={() => updateNumWorks(numWorks - 1)}
+                  disabled={numWorks <= 1}
+                  className="w-10 h-10 rounded-full bg-slate-700/50 text-white flex items-center justify-center hover:bg-slate-600 disabled:opacity-30 transition cursor-pointer"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" /></svg>
+                </button>
+                <span className="font-bold text-xl w-6 text-center text-white">{numWorks}</span>
+                <button
+                  onClick={() => updateNumWorks(numWorks + 1)}
+                  disabled={numWorks >= 20}
+                  className="w-10 h-10 rounded-full bg-blue-600/80 text-white flex items-center justify-center hover:bg-blue-500 disabled:opacity-30 transition shadow-lg cursor-pointer"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="space-y-8">
-            {pdfEntries.map((entry, index) => (
-              <div key={index} className="bg-slate-900/30 border border-slate-700/50 rounded-2xl p-6 lg:p-8 flex flex-col md:flex-row gap-8 shadow-sm">
+            {pdfEntries.map((entry, index) => {
+              const showDescription = selectedLayout !== "layout2";
 
-                {/* Left side: Image Upload */}
-                <div className="flex-1 flex flex-col">
-                  <h3 className="font-medium text-indigo-300 mb-3 text-sm uppercase tracking-wider">
-                    Work {index + 1} Image
-                  </h3>
-                  <div className="input-glass h-full min-h-[240px] flex flex-col items-center justify-center relative overflow-hidden group border-dashed hover:border-blue-500/50 transition-colors">
-                    <input
-                      type="file"
-                      accept=".jpeg, .jpg, .png"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0] || null;
-                        updatePdfEntry(index, "image", file);
-                      }}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                    />
-                    <div className="flex flex-col items-center justify-center pointer-events-none text-center">
-                       <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              return (
+                <div key={index} className="bg-slate-900/30 border border-slate-700/50 rounded-2xl p-6 lg:p-8 flex flex-col md:flex-row gap-8 shadow-sm">
+
+                  {/* Left side: Image Upload */}
+                  <div className="flex-1 flex flex-col">
+                    <h3 className="font-medium text-indigo-300 mb-3 text-sm uppercase tracking-wider">
+                      Work {index + 1} Image
+                    </h3>
+                    <div className="input-glass h-full min-h-[240px] flex flex-col items-center justify-center relative overflow-hidden group border-dashed hover:border-blue-500/50 transition-colors">
+                      <input
+                        type="file"
+                        accept=".jpeg, .jpg, .png"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] || null;
+                          updatePdfEntry(index, "image", file);
+                        }}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      />
+                      <div className="flex flex-col items-center justify-center pointer-events-none text-center">
+                        <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                           <svg className="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                       </div>
-                       <span className="text-white font-medium mb-1">Click to upload image</span>
-                       <span className="text-slate-500 text-xs uppercase tracking-wider">JPEG, PNG</span>
-                    </div>
-
-                    {entry.image && (
-                      <div className="absolute inset-0 bg-[#020617] flex items-center justify-center p-4 border-2 border-blue-500/50 rounded-xl z-20 pointer-events-none">
-                        <div className="text-center w-full">
-                           <svg className="w-8 h-8 text-blue-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                           <p className="text-sm text-blue-100 truncate w-full px-4 text-center">
-                             {entry.image.name}
-                           </p>
                         </div>
+                        <span className="text-white font-medium mb-1">Click to upload image</span>
+                        <span className="text-slate-500 text-xs uppercase tracking-wider">JPEG, PNG</span>
+                      </div>
+
+                      {entry.image && (
+                        <div className="absolute inset-0 bg-[#020617] flex items-center justify-center p-4 border-2 border-blue-500/50 rounded-xl z-20 pointer-events-none">
+                          <div className="text-center w-full">
+                            <svg className="w-8 h-8 text-blue-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <p className="text-sm text-blue-100 truncate w-full px-4 text-center">
+                              {entry.image.name}
+                            </p>
+                            <span className="inline-block mt-3 px-3 py-1 bg-blue-500/10 text-blue-300 text-xs font-medium rounded-full border border-blue-500/20">
+                              Click to replace image
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Right side: Title & Description */}
+                  <div className="flex-1 flex flex-col gap-6">
+                    <div>
+                      <label className="block font-medium text-indigo-300 mb-2 text-sm uppercase tracking-wider">
+                        Work {index + 1} Title
+                      </label>
+                      <input
+                        type="text"
+                        value={entry.title}
+                        onChange={(e) => updatePdfEntry(index, "title", e.target.value)}
+                        placeholder="e.g. Modern E-commerce Redesign"
+                        className="input-glass"
+                      />
+                    </div>
+                    {showDescription ? (
+                      <div className="flex-1 flex flex-col">
+                        <label className="block font-medium text-indigo-300 mb-2 text-sm uppercase tracking-wider">
+                          Work {index + 1} Description
+                        </label>
+                        <textarea
+                          value={entry.description}
+                          onChange={(e) => updatePdfEntry(index, "description", e.target.value)}
+                          placeholder="Describe the project overview, your personal role, and the key outcomes..."
+                          className="input-glass flex-1 min-h-[140px] resize-y"
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex-1 flex flex-col items-center justify-center border border-dashed border-slate-700/40 rounded-xl bg-slate-800/10 opacity-60 pointer-events-none p-4 text-center pb-8 pt-8">
+                        <svg className="w-6 h-6 text-slate-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+                        <span className="text-sm text-slate-400">Description hidden for this layout</span>
                       </div>
                     )}
                   </div>
-                </div>
 
-                {/* Right side: Title & Description */}
-                <div className="flex-1 flex flex-col gap-6">
-                  <div>
-                    <label className="block font-medium text-indigo-300 mb-2 text-sm uppercase tracking-wider">
-                      Work {index + 1} Title
-                    </label>
-                    <input
-                      type="text"
-                      value={entry.title}
-                      onChange={(e) => updatePdfEntry(index, "title", e.target.value)}
-                      placeholder="e.g. Modern E-commerce Redesign"
-                      className="input-glass"
-                    />
-                  </div>
-                  <div className="flex-1 flex flex-col">
-                    <label className="block font-medium text-indigo-300 mb-2 text-sm uppercase tracking-wider">
-                      Work {index + 1} Description
-                    </label>
-                    <textarea
-                      value={entry.description}
-                      onChange={(e) => updatePdfEntry(index, "description", e.target.value)}
-                      placeholder="Describe the project overview, your personal role, and the key outcomes..."
-                      className="input-glass flex-1 min-h-[140px] resize-y"
-                    />
-                  </div>
                 </div>
-
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Validation Error Banner */}
@@ -816,17 +898,17 @@ export default function Home() {
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                   />
                   <div className="flex flex-col items-center justify-center pointer-events-none transition-transform group-hover:scale-105">
-                     <svg className="w-8 h-8 text-indigo-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
-                     <span className="text-white font-medium">Click to upload PDF</span>
+                    <svg className="w-8 h-8 text-indigo-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+                    <span className="text-white font-medium">Click to upload PDF</span>
                   </div>
 
                   {resumeFile && (
                     <div className="absolute inset-0 bg-[#020617] flex items-center justify-center p-4 border-2 border-blue-500/50 rounded-xl z-20 pointer-events-none">
                       <div className="text-center w-full">
-                         <svg className="w-8 h-8 text-green-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                         <p className="text-sm font-medium text-blue-100 truncate w-full px-4">
-                           {resumeFile.name}
-                         </p>
+                        <svg className="w-8 h-8 text-green-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <p className="text-sm font-medium text-blue-100 truncate w-full px-4">
+                          {resumeFile.name}
+                        </p>
                       </div>
                     </div>
                   )}

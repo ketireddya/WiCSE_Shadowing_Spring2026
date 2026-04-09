@@ -295,6 +295,42 @@ footer {
   };
 }
 
+// ─── Wireframe helper components for the left preview pane ───────────────────
+
+// WfPage: a mini page card that visually represents one PDF page in the preview
+function WfPage({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={`bg-white rounded-md shadow-sm p-2.5 w-full ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+// WfImg: a light gray rectangle that stands in for an image block
+function WfImg({ label = "Image", className = "" }: { label?: string; className?: string }) {
+  return (
+    <div className={`bg-slate-200 rounded flex items-center justify-center ${className}`}>
+      <span className="text-slate-400 text-[10px] font-medium">{label}</span>
+    </div>
+  );
+}
+
+// WfLine: a horizontal bar that represents a line of text
+function WfLine({ className = "" }: { className?: string }) {
+  return <div className={`h-1.5 bg-slate-200 rounded-full ${className}`} />;
+}
+
+// WfSectionLabel: small muted uppercase section label shown above wireframe areas
+function WfSectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[9px] font-semibold uppercase tracking-widest text-slate-500 mb-1.5">
+      {children}
+    </p>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 // This is the main "Home" page component. It contains all the logic for our website generator interface.
 export default function Home() {
   // --- Route State ---
@@ -617,7 +653,8 @@ export default function Home() {
 
     return (
       <main className="bg-cinematic flex flex-col items-center py-10 animate-fade-in relative">
-        <div className="w-full max-w-5xl mb-6 px-4">
+        {/* Back button */}
+        <div className="w-full max-w-[1400px] mb-6 px-4">
           <button
             onClick={() => setAppRoute("selector")}
             className="flex items-center gap-2 text-indigo-300 hover:text-white transition font-medium"
@@ -627,191 +664,292 @@ export default function Home() {
           </button>
         </div>
 
-        <div className="glass-card p-6 md:p-10 w-full max-w-5xl mx-4">
-          <h1 className="text-3xl md:text-5xl font-bold mb-4 text-center text-white tracking-wide uppercase">
-            Creative PDF
-          </h1>
-          <p className="text-subtext mb-10 text-center max-w-2xl mx-auto text-lg leading-relaxed">
-            Provide portfolio entries to build your creative PDF portfolio. For each entry, upload an image and add a title and description.
-          </p>
+        {/* Two-column layout: preview pane left, form right */}
+        <div className="w-full max-w-[1400px] px-4 flex flex-col lg:flex-row gap-6 items-start">
 
-          <div className="mb-10">
-            <h2 className="text-xl font-bold text-white mb-4">Choose your layout</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <button
-                onClick={() => handleLayoutChange("layout1")}
-                className={`p-5 rounded-2xl border text-left transition-all ${selectedLayout === "layout1" ? "bg-blue-600/20 border-blue-500 shadow-[0_0_15px_rgba(37,99,235,0.2)]" : "bg-slate-900/40 border-slate-700/50 hover:bg-slate-800"}`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <h3 className="text-lg font-semibold text-white">Layout 1 (Default)</h3>
-                  {selectedLayout === "layout1" && <span className="text-blue-400 text-sm font-medium">Selected</span>}
-                </div>
-                <p className="text-sm text-subtext leading-relaxed mt-2">Image + title + description. One project per page.</p>
-              </button>
+          {/* LEFT COLUMN — Preview Pane (sticky on large screens) */}
+          <div className="w-full lg:w-[460px] lg:shrink-0 lg:sticky lg:top-6 self-start">
+            <div className="glass-card p-6">
 
-              <button
-                onClick={() => handleLayoutChange("layout2")}
-                className={`p-5 rounded-2xl border text-left transition-all ${selectedLayout === "layout2" ? "bg-blue-600/20 border-blue-500 shadow-[0_0_15px_rgba(37,99,235,0.2)]" : "bg-slate-900/40 border-slate-700/50 hover:bg-slate-800"}`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <h3 className="text-lg font-semibold text-white">Layout 2</h3>
-                  {selectedLayout === "layout2" && <span className="text-blue-400 text-sm font-medium">Selected</span>}
-                </div>
-                <p className="text-sm text-subtext leading-relaxed mt-2">Image-focused gallery. Titles only, no descriptions.</p>
-              </button>
+              {/* Pane header */}
+              <p className="text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-0.5">Layout Preview</p>
+              <p className="text-slate-400 text-sm mb-5">See how your portfolio pages will be structured</p>
 
-              <button
-                onClick={() => handleLayoutChange("layout3")}
-                className={`p-5 rounded-2xl border text-left transition-all ${selectedLayout === "layout3" ? "bg-blue-600/20 border-blue-500 shadow-[0_0_15px_rgba(37,99,235,0.2)]" : "bg-slate-900/40 border-slate-700/50 hover:bg-slate-800"}`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <h3 className="text-lg font-semibold text-white">Layout 3</h3>
-                  {selectedLayout === "layout3" && <span className="text-blue-400 text-sm font-medium">Selected</span>}
+              {/* Inner dark panel */}
+              <div className="bg-[#0a0f1e] border border-blue-900/50 rounded-2xl overflow-hidden">
+
+                {/* Layout identity block */}
+                <div className="px-5 pt-5 pb-4 border-b border-slate-800">
+                  {selectedLayout === "layout1" && (
+                    <>
+                      <h3 className="text-base font-bold text-white mb-1">Layout 1 — Default</h3>
+                      <p className="text-slate-400 text-xs leading-relaxed">Image + title + description. One project occupies its own dedicated page.</p>
+                    </>
+                  )}
+                  {selectedLayout === "layout2" && (
+                    <>
+                      <h3 className="text-base font-bold text-white mb-1">Layout 2 — Gallery</h3>
+                      <p className="text-slate-400 text-xs leading-relaxed">Image-focused grid. Two works per page, titles only — no descriptions.</p>
+                    </>
+                  )}
+                  {selectedLayout === "layout3" && (
+                    <>
+                      <h3 className="text-base font-bold text-white mb-1">Layout 3 — Editorial</h3>
+                      <p className="text-slate-400 text-xs leading-relaxed">Fixed editorial structure with alternating spreads, triple-column rows, and full-width feature pages.</p>
+                    </>
+                  )}
                 </div>
-                <p className="text-sm text-subtext leading-relaxed mt-2">Editorial layout with fixed structure and page count.</p>
-              </button>
+
+                {/* Specs list */}
+                <div className="px-5 py-4 border-b border-slate-800">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">Specs</p>
+                  <ul className="space-y-2">
+                    {selectedLayout === "layout1" && (
+                      <>
+                        <li className="flex items-center gap-2 text-xs text-slate-300"><span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />1 project per page</li>
+                        <li className="flex items-center gap-2 text-xs text-slate-300"><span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />Full description included</li>
+                        <li className="flex items-center gap-2 text-xs text-slate-300"><span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />Large image, prominent display</li>
+                        <li className="flex items-center gap-2 text-xs text-slate-300"><span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />Best for detailed case studies</li>
+                      </>
+                    )}
+                    {selectedLayout === "layout2" && (
+                      <>
+                        <li className="flex items-center gap-2 text-xs text-slate-300"><span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />2 projects per page</li>
+                        <li className="flex items-center gap-2 text-xs text-slate-300"><span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />Titles only, no descriptions</li>
+                        <li className="flex items-center gap-2 text-xs text-slate-300"><span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />Compact, image-led presentation</li>
+                        <li className="flex items-center gap-2 text-xs text-slate-300"><span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />Best for visual portfolios</li>
+                      </>
+                    )}
+                    {selectedLayout === "layout3" && (
+                      <>
+                        <li className="flex items-center gap-2 text-xs text-slate-300"><span className="w-1.5 h-1.5 rounded-full bg-violet-400 shrink-0" />Mixed grid structure</li>
+                        <li className="flex items-center gap-2 text-xs text-slate-300"><span className="w-1.5 h-1.5 rounded-full bg-violet-400 shrink-0" />Selective descriptions</li>
+                        <li className="flex items-center gap-2 text-xs text-slate-300"><span className="w-1.5 h-1.5 rounded-full bg-violet-400 shrink-0" />Varied image sizes &amp; crops</li>
+                        <li className="flex items-center gap-2 text-xs text-slate-300"><span className="w-1.5 h-1.5 rounded-full bg-violet-400 shrink-0" />Best for curated visual stories</li>
+                      </>
+                    )}
+                  </ul>
+                </div>
+
+                {/* Wireframe preview area */}
+                <div className="px-5 py-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">Page Preview</p>
+
+                  {/* Layout 1: tiny test using helper components */}
+                  {selectedLayout === "layout1" && (
+                    <div className="space-y-2">
+                      <WfSectionLabel>Work page</WfSectionLabel>
+                      <WfPage>
+                        <WfImg label="Project Image" className="w-full h-16 mb-2" />
+                        <WfLine className="w-2/3 mb-1.5" />
+                        <WfLine className="w-full mb-1" />
+                        <WfLine className="w-5/6" />
+                      </WfPage>
+                    </div>
+                  )}
+
+                  {/* Layout 2 & 3: placeholder until next step */}
+                  {selectedLayout !== "layout1" && (
+                    <div className="w-full h-24 rounded-lg bg-slate-800/60 border border-slate-700/40 flex items-center justify-center">
+                      <span className="text-slate-600 text-xs">
+                        {selectedLayout === "layout2" && "Gallery wireframe — coming next"}
+                        {selectedLayout === "layout3" && "Editorial wireframe — coming next"}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN — Form */}
+          <div className="glass-card p-6 md:p-10 w-full min-w-0">
+            <h1 className="text-3xl md:text-5xl font-bold mb-4 text-center text-white tracking-wide uppercase">
+              Creative PDF
+            </h1>
+            <p className="text-subtext mb-10 text-center max-w-2xl mx-auto text-lg leading-relaxed">
+              Provide portfolio entries to build your creative PDF portfolio. For each entry, upload an image and add a title and description.
+            </p>
+
+            <div className="mb-10">
+              <h2 className="text-xl font-bold text-white mb-4">Choose your layout</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button
+                  onClick={() => handleLayoutChange("layout1")}
+                  className={`p-5 rounded-2xl border text-left transition-all ${selectedLayout === "layout1" ? "bg-blue-600/20 border-blue-500 shadow-[0_0_15px_rgba(37,99,235,0.2)]" : "bg-slate-900/40 border-slate-700/50 hover:bg-slate-800"}`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="text-lg font-semibold text-white">Layout 1 (Default)</h3>
+                    {selectedLayout === "layout1" && <span className="text-blue-400 text-sm font-medium">Selected</span>}
+                  </div>
+                  <p className="text-sm text-subtext leading-relaxed mt-2">Image + title + description. One project per page.</p>
+                </button>
+
+                <button
+                  onClick={() => handleLayoutChange("layout2")}
+                  className={`p-5 rounded-2xl border text-left transition-all ${selectedLayout === "layout2" ? "bg-blue-600/20 border-blue-500 shadow-[0_0_15px_rgba(37,99,235,0.2)]" : "bg-slate-900/40 border-slate-700/50 hover:bg-slate-800"}`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="text-lg font-semibold text-white">Layout 2</h3>
+                    {selectedLayout === "layout2" && <span className="text-blue-400 text-sm font-medium">Selected</span>}
+                  </div>
+                  <p className="text-sm text-subtext leading-relaxed mt-2">Image-focused gallery. Titles only, no descriptions.</p>
+                </button>
+
+                <button
+                  onClick={() => handleLayoutChange("layout3")}
+                  className={`p-5 rounded-2xl border text-left transition-all ${selectedLayout === "layout3" ? "bg-blue-600/20 border-blue-500 shadow-[0_0_15px_rgba(37,99,235,0.2)]" : "bg-slate-900/40 border-slate-700/50 hover:bg-slate-800"}`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="text-lg font-semibold text-white">Layout 3</h3>
+                    {selectedLayout === "layout3" && <span className="text-blue-400 text-sm font-medium">Selected</span>}
+                  </div>
+                  <p className="text-sm text-subtext leading-relaxed mt-2">Editorial layout with fixed structure and page count.</p>
+                </button>
+              </div>
+
+              {selectedLayout === "layout3" && (
+                <div className="mt-4 p-4 bg-indigo-900/20 border border-indigo-500/30 rounded-xl animate-fade-in">
+                  <p className="text-indigo-200 text-sm font-medium flex items-center gap-2">
+                    <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    This layout uses a fixed number of pages and cannot be customized.
+                  </p>
+                </div>
+              )}
             </div>
 
-            {selectedLayout === "layout3" && (
-              <div className="mt-4 p-4 bg-indigo-900/20 border border-indigo-500/30 rounded-xl animate-fade-in">
-                <p className="text-indigo-200 text-sm font-medium flex items-center gap-2">
-                  <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  This layout uses a fixed number of pages and cannot be customized.
-                </p>
-              </div>
-            )}
-          </div>
+            <div className="flex flex-col sm:flex-row justify-between items-center bg-slate-900/40 p-6 rounded-2xl mb-10 border border-slate-700/50 shadow-inner">
+              <span className="font-semibold text-white text-lg">Number of portfolio works:</span>
+              {selectedLayout === "layout3" ? (
+                <span className="text-indigo-300 font-medium bg-slate-800/80 px-5 py-2.5 rounded-lg border border-indigo-500/20 mt-4 sm:mt-0 shadow-sm inline-flex items-center gap-2">
+                  <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                  Number of works is fixed for this layout.
+                </span>
+              ) : (
+                <div className="flex items-center gap-6 mt-4 sm:mt-0 bg-slate-800/80 rounded-full p-2 border border-slate-700/50">
+                  <button
+                    onClick={() => updateNumWorks(numWorks - 1)}
+                    disabled={numWorks <= 1}
+                    className="w-10 h-10 rounded-full bg-slate-700/50 text-white flex items-center justify-center hover:bg-slate-600 disabled:opacity-30 transition cursor-pointer"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" /></svg>
+                  </button>
+                  <span className="font-bold text-xl w-6 text-center text-white">{numWorks}</span>
+                  <button
+                    onClick={() => updateNumWorks(numWorks + 1)}
+                    disabled={numWorks >= 20}
+                    className="w-10 h-10 rounded-full bg-blue-600/80 text-white flex items-center justify-center hover:bg-blue-500 disabled:opacity-30 transition shadow-lg cursor-pointer"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                  </button>
+                </div>
+              )}
+            </div>
 
-          <div className="flex flex-col sm:flex-row justify-between items-center bg-slate-900/40 p-6 rounded-2xl mb-10 border border-slate-700/50 shadow-inner">
-            <span className="font-semibold text-white text-lg">Number of portfolio works:</span>
-            {selectedLayout === "layout3" ? (
-              <span className="text-indigo-300 font-medium bg-slate-800/80 px-5 py-2.5 rounded-lg border border-indigo-500/20 mt-4 sm:mt-0 shadow-sm inline-flex items-center gap-2">
-                <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                Number of works is fixed for this layout.
-              </span>
-            ) : (
-              <div className="flex items-center gap-6 mt-4 sm:mt-0 bg-slate-800/80 rounded-full p-2 border border-slate-700/50">
-                <button
-                  onClick={() => updateNumWorks(numWorks - 1)}
-                  disabled={numWorks <= 1}
-                  className="w-10 h-10 rounded-full bg-slate-700/50 text-white flex items-center justify-center hover:bg-slate-600 disabled:opacity-30 transition cursor-pointer"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" /></svg>
-                </button>
-                <span className="font-bold text-xl w-6 text-center text-white">{numWorks}</span>
-                <button
-                  onClick={() => updateNumWorks(numWorks + 1)}
-                  disabled={numWorks >= 20}
-                  className="w-10 h-10 rounded-full bg-blue-600/80 text-white flex items-center justify-center hover:bg-blue-500 disabled:opacity-30 transition shadow-lg cursor-pointer"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                </button>
-              </div>
-            )}
-          </div>
+            <div className="space-y-8">
+              {pdfEntries.map((entry, index) => {
+                const showDescription = selectedLayout !== "layout2";
 
-          <div className="space-y-8">
-            {pdfEntries.map((entry, index) => {
-              const showDescription = selectedLayout !== "layout2";
+                return (
+                  <div key={index} className="bg-slate-900/30 border border-slate-700/50 rounded-2xl p-6 lg:p-8 flex flex-col md:flex-row gap-8 shadow-sm">
 
-              return (
-                <div key={index} className="bg-slate-900/30 border border-slate-700/50 rounded-2xl p-6 lg:p-8 flex flex-col md:flex-row gap-8 shadow-sm">
-
-                  {/* Left side: Image Upload */}
-                  <div className="flex-1 flex flex-col">
-                    <h3 className="font-medium text-indigo-300 mb-3 text-sm uppercase tracking-wider">
-                      Work {index + 1} Image
-                    </h3>
-                    <div className="input-glass h-full min-h-[240px] flex flex-col items-center justify-center relative overflow-hidden group border-dashed hover:border-blue-500/50 transition-colors">
-                      <input
-                        type="file"
-                        accept=".jpeg, .jpg, .png"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0] || null;
-                          updatePdfEntry(index, "image", file);
-                        }}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                      />
-                      <div className="flex flex-col items-center justify-center pointer-events-none text-center">
-                        <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                          <svg className="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                        </div>
-                        <span className="text-white font-medium mb-1">Click to upload image</span>
-                        <span className="text-slate-500 text-xs uppercase tracking-wider">JPEG, PNG</span>
-                      </div>
-
-                      {entry.image && (
-                        <div className="absolute inset-0 bg-[#020617] flex items-center justify-center p-4 border-2 border-blue-500/50 rounded-xl z-20 pointer-events-none">
-                          <div className="text-center w-full">
-                            <svg className="w-8 h-8 text-blue-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                            <p className="text-sm text-blue-100 truncate w-full px-4 text-center">
-                              {entry.image.name}
-                            </p>
-                            <span className="inline-block mt-3 px-3 py-1 bg-blue-500/10 text-blue-300 text-xs font-medium rounded-full border border-blue-500/20">
-                              Click to replace image
-                            </span>
+                    {/* Left side: Image Upload */}
+                    <div className="flex-1 flex flex-col">
+                      <h3 className="font-medium text-indigo-300 mb-3 text-sm uppercase tracking-wider">
+                        Work {index + 1} Image
+                      </h3>
+                      <div className="input-glass h-full min-h-[240px] flex flex-col items-center justify-center relative overflow-hidden group border-dashed hover:border-blue-500/50 transition-colors">
+                        <input
+                          type="file"
+                          accept=".jpeg, .jpg, .png"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0] || null;
+                            updatePdfEntry(index, "image", file);
+                          }}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        />
+                        <div className="flex flex-col items-center justify-center pointer-events-none text-center">
+                          <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <svg className="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                           </div>
+                          <span className="text-white font-medium mb-1">Click to upload image</span>
+                          <span className="text-slate-500 text-xs uppercase tracking-wider">JPEG, PNG</span>
+                        </div>
+
+                        {entry.image && (
+                          <div className="absolute inset-0 bg-[#020617] flex items-center justify-center p-4 border-2 border-blue-500/50 rounded-xl z-20 pointer-events-none">
+                            <div className="text-center w-full">
+                              <svg className="w-8 h-8 text-blue-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                              <p className="text-sm text-blue-100 truncate w-full px-4 text-center">
+                                {entry.image.name}
+                              </p>
+                              <span className="inline-block mt-3 px-3 py-1 bg-blue-500/10 text-blue-300 text-xs font-medium rounded-full border border-blue-500/20">
+                                Click to replace image
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Right side: Title & Description */}
+                    <div className="flex-1 flex flex-col gap-6">
+                      <div>
+                        <label className="block font-medium text-indigo-300 mb-2 text-sm uppercase tracking-wider">
+                          Work {index + 1} Title
+                        </label>
+                        <input
+                          type="text"
+                          value={entry.title}
+                          onChange={(e) => updatePdfEntry(index, "title", e.target.value)}
+                          placeholder="e.g. Modern E-commerce Redesign"
+                          className="input-glass"
+                        />
+                      </div>
+                      {showDescription ? (
+                        <div className="flex-1 flex flex-col">
+                          <label className="block font-medium text-indigo-300 mb-2 text-sm uppercase tracking-wider">
+                            Work {index + 1} Description
+                          </label>
+                          <textarea
+                            value={entry.description}
+                            onChange={(e) => updatePdfEntry(index, "description", e.target.value)}
+                            placeholder="Describe the project overview, your personal role, and the key outcomes..."
+                            className="input-glass flex-1 min-h-[140px] resize-y"
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex-1 flex flex-col items-center justify-center border border-dashed border-slate-700/40 rounded-xl bg-slate-800/10 opacity-60 pointer-events-none p-4 text-center pb-8 pt-8">
+                          <svg className="w-6 h-6 text-slate-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+                          <span className="text-sm text-slate-400">Description hidden for this layout</span>
                         </div>
                       )}
                     </div>
+
                   </div>
-
-                  {/* Right side: Title & Description */}
-                  <div className="flex-1 flex flex-col gap-6">
-                    <div>
-                      <label className="block font-medium text-indigo-300 mb-2 text-sm uppercase tracking-wider">
-                        Work {index + 1} Title
-                      </label>
-                      <input
-                        type="text"
-                        value={entry.title}
-                        onChange={(e) => updatePdfEntry(index, "title", e.target.value)}
-                        placeholder="e.g. Modern E-commerce Redesign"
-                        className="input-glass"
-                      />
-                    </div>
-                    {showDescription ? (
-                      <div className="flex-1 flex flex-col">
-                        <label className="block font-medium text-indigo-300 mb-2 text-sm uppercase tracking-wider">
-                          Work {index + 1} Description
-                        </label>
-                        <textarea
-                          value={entry.description}
-                          onChange={(e) => updatePdfEntry(index, "description", e.target.value)}
-                          placeholder="Describe the project overview, your personal role, and the key outcomes..."
-                          className="input-glass flex-1 min-h-[140px] resize-y"
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex-1 flex flex-col items-center justify-center border border-dashed border-slate-700/40 rounded-xl bg-slate-800/10 opacity-60 pointer-events-none p-4 text-center pb-8 pt-8">
-                        <svg className="w-6 h-6 text-slate-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
-                        <span className="text-sm text-slate-400">Description hidden for this layout</span>
-                      </div>
-                    )}
-                  </div>
-
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Validation Error Banner */}
-          {pdfError && (
-            <div className="mt-8 p-5 bg-red-900/30 border border-red-500/50 text-red-200 rounded-xl flex items-center gap-4 animate-fade-in font-medium">
-              <svg className="w-6 h-6 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              {pdfError}
+                );
+              })}
             </div>
-          )}
 
-          <div className="mt-10 pt-8 border-t border-slate-700/50 lg:w-1/2 mx-auto">
-            <button
-              onClick={handleGeneratePdf}
-              className="btn-primary py-4 text-lg w-full"
-            >
-              Generate Portfolio
-            </button>
-          </div>
-        </div>
+            {/* Validation Error Banner */}
+            {pdfError && (
+              <div className="mt-8 p-5 bg-red-900/30 border border-red-500/50 text-red-200 rounded-xl flex items-center gap-4 animate-fade-in font-medium">
+                <svg className="w-6 h-6 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                {pdfError}
+              </div>
+            )}
+
+            <div className="mt-10 pt-8 border-t border-slate-700/50 lg:w-1/2 mx-auto">
+              <button
+                onClick={handleGeneratePdf}
+                className="btn-primary py-4 text-lg w-full"
+              >
+                Generate Portfolio
+              </button>
+            </div>
+          </div>{/* end right column */}
+        </div>{/* end two-column wrapper */}
       </main>
     );
   }
